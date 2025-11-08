@@ -6,7 +6,7 @@ body {
     align-items: center;
     justify-content: center;
 
-    padding-top: 50px;
+    padding-top: 20px;
 }
 
 .main-container {
@@ -34,4 +34,13 @@ body {
     align-items: center;       
     justify-content: center;   
     gap: 9px;
+}
+
+.visual-frame {
+    margin: 20px;
+    width: 900px;
+    height: 500px;
+    background-color: rgb(159, 229, 236);
+    border-radius: 20px;
+
 }
