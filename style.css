@@ -7,6 +7,7 @@ body {
     justify-content: center;
 
     padding-top: 10px;
+    background: linear-gradient(0deg,rgba(42, 123, 155, 1) 0%, rgb(38, 196, 248) 50%, rgb(3, 203, 160) 100%);
 }
 
 .main-container {
@@ -26,7 +27,7 @@ body {
 .top-indicator {
     width: 100px;
     height: 60px;
-    background-color: rgb(147, 151, 151);
+    background-color: rgb(226, 231, 231);
     border-radius: 10px;
 
     display: flex;
@@ -72,6 +73,7 @@ body {
     height: 50px;
     width: 140px;
     margin: 0px 10px;
+    border: 1000px;
 }
 
 .reset-button {
