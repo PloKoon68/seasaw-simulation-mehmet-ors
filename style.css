@@ -23,7 +23,7 @@ body {
     justify-content: center;
     gap: 30px;
 }
-.indicator {
+.top-indicator {
     width: 120px;
     height: 80px;
     background-color: rgb(147, 151, 151);
@@ -43,4 +43,26 @@ body {
     background-color: rgb(159, 229, 236);
     border-radius: 20px;
 
+    position: relative;
+}
+
+.side-indicator {
+    position: absolute; 
+    top: 20px;
+    width: 150px;
+    background-color: rgb(236, 242, 242);
+    border-radius: 10px;
+    padding: 20px 20px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.side-indicator.left {
+    left: 20px; 
+}
+
+.side-indicator.right {
+    right: 20px;
 }
