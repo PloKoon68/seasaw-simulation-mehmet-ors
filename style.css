@@ -41,8 +41,8 @@ body {
 /* visual frame and its content */
 .visual-frame {
     margin: 20px;
-    width: 860px;
-    height: 470px;
+    width: 800px;
+    height: 400px;
     background-color: rgb(159, 229, 236);
     border-radius: 20px;
 
@@ -114,8 +114,6 @@ body {
 
 #seasawCnvs {
     display: block;
-    width: 60%;
-    height: 100%;
     cursor: pointer;
     margin: auto;
 
