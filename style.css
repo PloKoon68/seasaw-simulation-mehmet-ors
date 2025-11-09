@@ -119,6 +119,6 @@ body {
     cursor: pointer;
     margin: auto;
 
-    background-color:blue;
+    background: linear-gradient(0deg, rgb(75, 96, 104) 0%, rgb(208, 212, 212) 50%, rgb(38, 196, 248) 100%);
 }
 
