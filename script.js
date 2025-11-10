@@ -157,7 +157,7 @@ function draw() {
     pdrawShape([[50, 50], [45, 60], [55, 60]], '#5d6767ff');
 
     // draw seesaw plank
-    pDrawSeesaw(10);
+    pDrawSeesaw(measures.angle);
 
     // draw ball if visible
     let lastBallIndex = balls.length-1
@@ -183,7 +183,6 @@ function startFalling(ball) {
 
     worker.onmessage = function(e) {
         ball.y = e.data.y; // update ball position
-        console.log("hi")
         draw();             
         if (e.data.y === ball.targetY) {   //ball reached target, its terminate thread
             ball.falling = false;
@@ -202,7 +201,9 @@ function startFalling(ball) {
                 measures.left_side.weight += ball.weight;
                 measures.left_side.torque += torque;
             }
-            console.log("w: ", measures)
+
+            measures.angle = Math.max(-30, Math.min(30, (measures.right_side.torque - measures.left_side.torque) / 10));
+        console.log("measures became: ", measures)
         }
     };
 }
