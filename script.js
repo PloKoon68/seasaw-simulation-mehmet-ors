@@ -42,7 +42,7 @@ function pdrawBall(cx, cy, r, color) {
 
 
 let balls = []
-balls.push({
+const ball_template = {
     x: 0,
     y: 0,
     r: 5,
@@ -51,8 +51,11 @@ balls.push({
     falling: false,
     fallSpeed: 0,
     targetX: null,  
-    targetY: 70
-}); 
+    targetY: 60,
+    weight: 2
+}
+
+balls.push({ ...ball_template }); 
 
 // Draw function
 function draw() {
@@ -70,10 +73,12 @@ function draw() {
     // draw ball if visible
     let lastBallIndex = balls.length
     for(let i = 0; i < lastBallIndex; i++) {
+        /*
         if(balls[i].falling) {
             console.log("falling: ")
             fall(balls[i])    
         }
+            */
         pdrawBall(balls[i].x, balls[i].y, balls[i].r, balls[i].color);
     }
 }
@@ -97,9 +102,32 @@ async function fall(ball) {
     }
 }
 
+//generate seperate thread for each falling ball
+function startFalling(ball) {
+    const worker = new Worker('fallThread.js');
+    worker.postMessage({
+        y: ball.y,
+        targetY: ball.targetY,
+        weight: ball.weight
+    });
+
+    worker.onmessage = function(e) {
+        ball.y = e.data.y; // update ball position
+        draw();             
+
+        if (e.data.done) {   //ball reached target, its terminate thread
+            ball.falling = false;
+            worker.terminate(); 
+        }
+    };
+}
+
+
+
+const rect = canvas.getBoundingClientRect();
+
 // ball on mouse cursor
 canvas.addEventListener('mousemove', (event) => {
-    const rect = canvas.getBoundingClientRect();
     let lastBallIndex = balls.length-1
     balls[lastBallIndex].x = Math.min(92, Math.max(8, ((event.clientX - rect.left) / rect.width) * 100));
     balls[lastBallIndex].y = 10;
@@ -117,20 +145,13 @@ canvas.addEventListener('mouseleave', () => {
 // drop the ball on click
 canvas.addEventListener('click', (event) => {
     balls[balls.length-1].falling = true;
-    console.log(balls.length-1, " is falling")
-    console.log(balls)
-    balls.push({
-        x: event.clientX,
-        y: event.clientY,
-        r: 5,
-        color: '#0e1575ff',
-        visible: false,
-        falling: false,
-        fallSpeed: 0,
-        targetX: null,  
-        targetY: 70,
-        fallSpeed: 0
-    })
+
+    startFalling(balls[balls.length-1])
+
+    ball_template.x = Math.min(92, Math.max(8, ((event.clientX - rect.left) / rect.width) * 100))
+    ball_template.y = 10
+    balls.push({ ...ball_template })
+
 
     draw();
 });
