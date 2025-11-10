@@ -41,7 +41,9 @@ function pdrawBall(ball) {
 
     ctx.fillStyle = 'white';
     ctx.font = '11px Arial';
-    ctx.fillText( ball.weight+'kg', percentage_to_px(ball.x-2), percentage_to_px(ball.y+0.7));
+    ctx.textAlign = 'center';     // horizontally center
+    ctx.textBaseline = 'middle';  // vertically center
+    ctx.fillText( ball.weight+'kg', percentage_to_px(ball.x), percentage_to_px(ball.y));
 
     ctx.closePath();
 }
@@ -74,7 +76,7 @@ balls.push({
     targetY: 65,
     weight: initialWeight
 }); 
-console.log("j: ", 43.)
+
 function create_new_ball(event) {
     const weight = Math.floor(Math.random() * 10) + 1;
     balls.push({ 
@@ -131,7 +133,6 @@ function startFalling(ball) {
         ball.y = e.data.y; // update ball position
         draw();             
         if (e.data.y === 65) {   //ball reached target, its terminate thread
-            console.log("finalized: ", 65)
             ball.falling = false;
             worker.terminate(); 
         }
