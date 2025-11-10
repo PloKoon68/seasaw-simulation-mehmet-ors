@@ -15,6 +15,15 @@ const PLANK_WIDTH = 5;
 const DROP_BALL_HORIZONTAL_LIMIT = 10  // if mouse is outside 10 percent to the side of canvas horizontal line, it is not droppable
 
 
+let measures = {
+    left_side: {weight: 0, torque: 0},
+    right_side: {weight: 0, torque: 0},
+    angle: 0
+}
+let left_values = {weight: 0, torque: 0};
+let right_values = {weight: 0, torque: 0};
+
+
 //p prefix means percentage, instead of raw pixels
 const percentage_to_px = (percentage) => {
     return percentage * LENGTH / 100;
@@ -77,7 +86,6 @@ balls.push({
     color:  randomDarkColor(),
     visible: false,
     falling: false,
-    fallSpeed: 0,
     targetX: null,  
     targetY: 50 - initialRadius,
     weight: initialWeight
@@ -93,7 +101,6 @@ function create_new_ball(event) {
         color:  randomDarkColor(),
         visible: true,
         falling: false,
-        fallSpeed: 0,
         targetX: null,  
         targetY: 50 - r,
         weight: weight
@@ -125,7 +132,7 @@ function pDrawSeesaw(angleDegrees) {
 
 const rotateButton = document.querySelector('.pause-button');
 function rotateSeesaw() {
-    drawSeesaw(15); // example: rotate 15 degrees
+    pDrawSeesaw(15); // example: rotate 15 degrees
 
     console.log("Button clicked!");
 }
@@ -171,14 +178,18 @@ function startFalling(ball) {
 
     worker.onmessage = function(e) {
         ball.y = e.data.y; // update ball position
+        console.log("hi")
         draw();             
-        if (e.data.y === 65) {   //ball reached target, its terminate thread
+        if (e.data.y === ball.targetY) {   //ball reached target, its terminate thread
             ball.falling = false;
             worker.terminate(); 
+
+            if(ball.x >= 50) measures.right_side.weight += ball.weight;
+            else measures.left_side.weight += ball.weight;
+            console.log("w: ", measures)
         }
     };
 }
-
 
 // ball on mouse cursor
 canvas.addEventListener('mousemove', (event) => {
