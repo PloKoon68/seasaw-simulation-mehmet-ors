@@ -99,7 +99,9 @@ function updateDroppedBallPosition(ball, angle) {    // called for each ball whe
 }
 function calculateHoldingBalltargetY(ball, angle) {    // called for each ball when the rotation thread updates the angle
     const radian = angle * Math.PI / 180;
-    const newTargetY = (Math.tan(radian) * (ball.x - 50)) + ( - ball.r) + 50
+    console.log("ballx: ", ball, angle)
+    const newTargetY = (Math.tan(radian) * (ball.x - 50)) + 50
+    console.log("dolayısıyla y: ", newTargetY)
     ball.targetY = newTargetY
 }
 
@@ -131,7 +133,8 @@ function randomDarkColor() {
 
 const initialWeight = Math.floor(Math.random() * 10) + 1
 const initialRadius = 4 + initialWeight/3
-balls.push({ 
+
+const initialBall = { 
     x: 0,
     y: 0,
     r: initialRadius,
@@ -139,14 +142,17 @@ balls.push({
     visible: false,
     falling: false,
     targetX: null,  
-    targetY: 50 - initialRadius - PLANK_WIDTH/2,
+    targetY: null,
     weight: initialWeight,
     distanceToCenter: null
-}); 
+}
+calculateHoldingBalltargetY(initialBall, measures.angle)
+balls.push(initialBall); 
 
 function create_new_ball(event) {
     const weight = Math.floor(Math.random() * 10) + 1;
     const r = 4 + weight/3;
+
     balls.push({ 
         x: Math.min(50+PLANK_LENGTH/2, Math.max(50-PLANK_LENGTH/2, ((event.clientX - rect.left) / rect.width) * 100)),
         y: 10,
@@ -155,10 +161,12 @@ function create_new_ball(event) {
         visible: true,
         falling: false,
         targetX: null,  
-        targetY: 50 - r - PLANK_WIDTH/2,
+        targetY: null,
         weight: weight,
         distanceToCenter: null
     }); 
+    calculateHoldingBalltargetY(balls[balls.length-1], measures.angle)
+    console.log("tamam, ", measures.angle, " ile oluşturduk")
 }
 
 
@@ -264,8 +272,9 @@ function startRotation() {
         measures.angularAcceleration = e.data.angularAcceleration
         measures.angularVelocity = e.data.angularVelocity
         
-        calculateHoldingBalltargetY(balls[balls.length-1], measures.angle);  //last balls targety change
-
+        if(measures.angle !== 30 && measures.angle !== -30) {
+            calculateHoldingBalltargetY(balls[balls.length-1], measures.angle);  //last balls targety change
+        }
         if(e.data.finished) {
             rotationThread.terminate() //finish thread
             rotationThread = null;  
@@ -280,11 +289,14 @@ function startRotation() {
 canvas.addEventListener('mousemove', (event) => {
     let lastBallIndex = balls.length-1
     const radian = measures.angle * Math.PI / 180
-    const maxMovablePoint = Math.abs(Math.cos(radian) * (PLANK_LENGTH/2))
+    const maxMovablePoint = Math.abs(Math.cos(radian) * (PLANK_LENGTH/2))   //dynamic based on angle of plank
 
     balls[lastBallIndex].x = Math.min(50+maxMovablePoint, Math.max(50-maxMovablePoint, ((event.clientX - rect.left) / rect.width) * 100));
     balls[lastBallIndex].y = 10;
     balls[lastBallIndex].visible = true;
+
+    calculateHoldingBalltargetY(balls[lastBallIndex], measures.angle)
+
     draw();
 });
 
