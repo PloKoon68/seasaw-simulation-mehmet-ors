@@ -18,7 +18,9 @@ const DROP_BALL_HORIZONTAL_LIMIT = 10  // if mouse is outside 10 percent to the 
 let measures = {
     left_side: {weight: 0, rawTorque: 0},
     right_side: {weight: 0, rawTorque: 0},
-    angle: 0
+    angle: 0,
+    angularAcceleration: 0,
+    angularVelocity: 0,
 }
 
 
@@ -85,7 +87,7 @@ function pDrawSeesaw(angleDegrees) {
 
 
 ///////////////////////
-function calculateDroppedBallPosition(ball, angle) {    // called for each ball when the rotation thread updates the angle
+function updateDroppedBallPosition(ball, angle) {    // called for each ball when the rotation thread updates the angle
     const radian = angle * Math.PI / 180;
     const ballCenterDistanceFromPlank = PLANK_WIDTH/2 + ball.r
 
@@ -95,6 +97,12 @@ function calculateDroppedBallPosition(ball, angle) {    // called for each ball 
     ball.x = 50 + dx
 
 }
+function calculateHoldingBalltargetY(ball, angle) {    // called for each ball when the rotation thread updates the angle
+    const radian = angle * Math.PI / 180;
+    const newTargetY = (Math.tan(radian) * (ball.x - 50)) + ( - ball.r) + 50
+    ball.targetY = newTargetY
+}
+
 
 
 
@@ -202,7 +210,7 @@ function startFalling(ball) {
         ball.y = e.data.y; // update ball position
         draw();             
         if (e.data.y === ball.targetY) {   //ball reached target, its terminate thread
-            ball.distanceToCenter = distanceToCenter([ball.x, ball.y])
+            ball.distanceToCenter = distanceToCenter([ball.x, ball.y]) // should be fixed (not center of ball, the position ball touched to plank should be considered)
 
             ball.falling = false;
             worker.terminate(); 
@@ -245,10 +253,6 @@ function endFalling(ball) {
 let rotationThread;
 function startRotation() {
     rotationThread = new Worker('rotationThread.js');
-
-
-
-
     rotationThread.postMessage({
         measures: measures,
         balls: balls.slice(0, -1),
@@ -256,11 +260,13 @@ function startRotation() {
     });
 
     rotationThread.onmessage = function(e) {
-        const angle= e.data.angle; // update ball position
-        measures.angle = angle
-        const finished = e.data.finished
+        measures.angle = e.data.angle; // update ball position
+        measures.angularAcceleration = e.data.angularAcceleration
+        measures.angularVelocity = e.data.angularVelocity
         
-        if(finished) {
+        calculateHoldingBalltargetY(balls[balls.length-1], measures.angle);  //last balls targety change
+
+        if(e.data.finished) {
             rotationThread.terminate() //finish thread
             rotationThread = null;  
         }
@@ -273,7 +279,10 @@ function startRotation() {
 // ball on mouse cursor
 canvas.addEventListener('mousemove', (event) => {
     let lastBallIndex = balls.length-1
-    balls[lastBallIndex].x = Math.min(50+PLANK_LENGTH/2, Math.max(50-PLANK_LENGTH/2, ((event.clientX - rect.left) / rect.width) * 100));
+    const radian = measures.angle * Math.PI / 180
+    const maxMovablePoint = Math.abs(Math.cos(radian) * (PLANK_LENGTH/2))
+
+    balls[lastBallIndex].x = Math.min(50+maxMovablePoint, Math.max(50-maxMovablePoint, ((event.clientX - rect.left) / rect.width) * 100));
     balls[lastBallIndex].y = 10;
     balls[lastBallIndex].visible = true;
     draw();

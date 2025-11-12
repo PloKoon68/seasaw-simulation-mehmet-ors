@@ -95,7 +95,7 @@ async function loop() {
             }
         }
 
-        postMessage({ angle: angle, finished });  //send  to main.js it will update (rotate)
+        postMessage({ finished: finished, angle: angle, angularAcceleration: angularAcceleration, angularVelocity: angularVelocity });  //send  to main.js it will update (rotate)
         await wait(loopPeriod);
     }
 }
