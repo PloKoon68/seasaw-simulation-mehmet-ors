@@ -1,13 +1,9 @@
-let L;  //initially obtained fixed variables
 let targetAngle, coefficient; //variables that may change dynamically if weights update
 let angle;  //initially recieved by user, updated over time, managed by this thread
 let angularVelocity = 0, angularAcceleration = 0;  //derivated variables that the thread calculates
 
 let balls;
-let netRawTorque;
-let totalRawTorque;
 
-const g = 10;  //gravity constant
 const gravityAcceleration = 10; //gravity acceleration 
 const loopPeriod = 20;
 
@@ -18,8 +14,9 @@ function calculateConstantCoefficient(leftWeight, rightWeight) {   //the part ex
 }
     */
 
+let count = 0
 
-function calculateConstantCoefficient() { 
+function calculateConstantCoefficient(netRawTorque) { 
     let nominator = netRawTorque  //τnet​=right∑​(ri)​.(mi)​.g.cos(θ)−left∑​(ri).(​mi).​g.cos(θ)
                                   //since teta angle will change in time, it is a variable that will be pass in the main loop evey in every step
 
@@ -32,16 +29,6 @@ function calculateConstantCoefficient() {
     denominator /= gravityAcceleration;
 
     return nominator/denominator;   //τnet​ / I
-    
-    /*
-    let rightTorqueSum = 0, leftTorqueSum = 0;
-    for(let i = 0; i < balls.length; i++) {
-        if(balls.x > 50)  //ball at right side
-            rightTorqueSum += balls[i].weight * balls[i].distanceToCenter;
-        else              //ball at left side
-            leftTorqueSum += balls[i].weight * balls[i].distanceToCenter;
-    }
-     */
 }
 
 function updateTargetAngle(netRawTorque) {   //the part except cos(angle)
@@ -53,29 +40,18 @@ function updateTargetAngle(netRawTorque) {   //the part except cos(angle)
 
 onmessage = function(e) {
     // Check if it's an update message or start message
-    if (e.data.type === 'update') {     // {measures, type :'update'}
-        let leftWeight = e.data.measures.left_side.weight
-        let rightWeight = e.data.measures.right_side.weight
-
-        coefficient = calculateConstantCoefficient(leftWeight, rightWeight)
-        targetAngle = updateTargetAngle(leftWeight, rightWeight);
-
-    } else if('initial') {     // {measures, length, type :'initial'}
+    if (e.data.type === 'update') {
+        balls = e.data.balls;
+        count++;
+        const netRawTorque = e.data.measures.right_side.rawTorque - e.data.measures.left_side.rawTorque;
+        coefficient = calculateConstantCoefficient(netRawTorque)
+        targetAngle = updateTargetAngle(netRawTorque);
+    } else if(e.data.type === 'initial') { 
         // initial setup
-
-        /*
-        let leftWeight = e.data.measures.left_side.weight
-        let rightWeight = e.data.measures.right_side.weight
-        */
         balls = e.data.balls
-        netRawTorque = e.data.measures.right_side.rawTorque - e.data.measures.left_side.rawTorque;
-        totalRawTorque = e.data.measures.right_side.rawTorque + e.data.measures.left_side.rawTorque;
-
-
         angle = e.data.measures.angle
-        L = e.data.length
-        
-        coefficient = calculateConstantCoefficient()
+        const netRawTorque = e.data.measures.right_side.rawTorque - e.data.measures.left_side.rawTorque;
+        coefficient = calculateConstantCoefficient(netRawTorque)
         targetAngle = updateTargetAngle(netRawTorque);
 
         loop();
@@ -87,26 +63,41 @@ async function wait(ms) {
 }
 
 async function loop() {
-    while (angle !== targetAngle) {
+    let finished = false;
+
+    while (true) {
+        if(Math.abs(angle) > 30) {
+            angularAcceleration = 0;
+            angularVelocity = 0;
+        }
+
         angularAcceleration = coefficient * Math.cos(angle * Math.PI / 180);
         angularVelocity += angularAcceleration * (loopPeriod/1000);
         angle += angularVelocity;
         
         //finish loop
         if (targetAngle > 0) {
-            if(angle > targetAngle) angle = targetAngle  
+            if(angle > targetAngle) {
+                angle = targetAngle 
+                finished = true 
+            }
         }
          if (targetAngle < 0) {
-            if(angle < targetAngle) angle = targetAngle  
+            if(angle < targetAngle) {
+                angle = targetAngle  
+                finished = true 
+            }
         }
         else {
-            if(Math.abs(targetAngle - angle) < 1) angle = targetAngle      
+            if(Math.abs(targetAngle - angle) < 1) {
+                angle = targetAngle      
+                finished = true 
+            }
         }
 
-        postMessage({ angle: angle, targetAngle: targetAngle });  //send  to main.js it will update (rotate)
+        postMessage({ angle: angle, finished });  //send  to main.js it will update (rotate)
         await wait(loopPeriod);
     }
-    self.close(); // terminate this worker
 }
 
 

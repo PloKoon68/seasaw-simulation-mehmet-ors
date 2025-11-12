@@ -192,6 +192,7 @@ function draw() {
 function startFalling(ball) {
     const worker = new Worker('fallThread.js');
     worker.postMessage({
+        type: 'initial',
         y: ball.y,
         targetY: ball.targetY,
         weight: ball.weight
@@ -224,12 +225,20 @@ function endFalling(ball) {
         measures.left_side.weight += ball.weight;
         measures.left_side.rawTorque += torque;
     }
-    //measures.angle = Math.max(-30, Math.min(30, (measures.right_side.torque - measures.left_side.torque) / 10));
 
+    draw()
+    if(rotationThread) {
+        rotationThread.postMessage({
+            type: 'update',
+            measures: measures,
+            balls: balls.slice(0, -1)
+        })
+    } else {
+    startRotation()
+
+    }
 
     //start rotating
-    draw()
-    startRotation()
 }
 
 
@@ -237,38 +246,25 @@ let rotationThread;
 function startRotation() {
     rotationThread = new Worker('rotationThread.js');
 
-    const distancesToCenter = balls.map((ball) => ball.distanceToCenter)
-    distancesToCenter.pop()
+
+
 
     rotationThread.postMessage({
         measures: measures,
-        balls: balls,
-        length: PLANK_LENGTH/2
+        balls: balls.slice(0, -1),
+        type: 'initial'
     });
 
     rotationThread.onmessage = function(e) {
         const angle= e.data.angle; // update ball position
         measures.angle = angle
-        const targetAngle = e.data.targetAngle 
+        const finished = e.data.finished
+        
+        if(finished) {
+            rotationThread.terminate() //finish thread
+            rotationThread = null;  
+        }
         draw();             
-
-        //finish loop
-        if (targetAngle > 0) {
-            console.log("here: ", targetAngle === angle)
-            if(angle === targetAngle) {
-                rotationThread.terminate(); 
-            }
-        }
-         if (targetAngle < 0) {
-            if(angle === targetAngle)  {
-                rotationThread.terminate(); 
-            }   
-        }
-        else {
-            if(Math.abs(targetAngle - angle) < 1)  {
-                rotationThread.terminate(); 
-            }
-        }
     };
 }
 
@@ -285,7 +281,6 @@ canvas.addEventListener('mousemove', (event) => {
 
 // remove ball when leaves canvas
 canvas.addEventListener('mouseleave', () => {
-    console.log(rotationThread)
     balls[balls.length-1].visible = false;
     draw();
 });
