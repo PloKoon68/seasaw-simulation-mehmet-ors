@@ -52,7 +52,6 @@ onmessage = function(e) {
 
         //if loaded saved state, continue from last velocity
         if(e.data.loadedAngularVelocity) angularVelocity = e.data.loadedAngularVelocity
-        console.log(e.data.loadedAngularVelocity)
         loop();
     }
 };

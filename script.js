@@ -111,7 +111,6 @@ function pDrawSeesaw(angleDegrees) {
 
 ///////////////////////
 
-
 function calculateBalltargetY(ball, angle) {    // called for each ball when the rotation thread updates the angle
     const radian = angle * Math.PI / 180;
     const newTargetY = (Math.tan(radian) * (ball.x - 50)) + (-(PLANK_WIDTH/2)/Math.cos(radian) - ball.r) + 50
@@ -334,7 +333,6 @@ function updateTorque(ball) {
 let rotationThread;
 function startRotation(loadedAngularVelocity) {
     rotationThread = new Worker('rotationThread.js');
-    console.log("took: ", loadedAngularVelocity)
     rotationThread.postMessage({
         measures: measures,
         balls: balls.slice(0, -1),
@@ -365,7 +363,6 @@ function startRotation(loadedAngularVelocity) {
         if(e.data.finished) {
             rotationThread.terminate() //finish thread
             rotationThread = null;  
-            console.log("rotationo bitti")
             //angular velocity and acceleration becomes 0
             measures.angularVelocity = 0;
             measures.angularAcceleration = 0;
@@ -449,9 +446,13 @@ function loadStateFromLocalStorage() {
         htmlUpdateRotationParameters();
 
         draw();
+
+        //continue the therads from where they were left
         let loadedAngularVelocity = measures.angularVelocity
         startRotation(loadedAngularVelocity)
 
+        for(let i = 0; i < balls.length; i++)
+            startFalling(balls[i])
 
     } else 
         console.log("No saved state found.");

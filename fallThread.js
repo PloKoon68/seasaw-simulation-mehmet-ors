@@ -8,7 +8,9 @@ onmessage = function(e) {
     dynamicTargetY = e.data.targetY;   //targetY may update during fall (if plank is keep rotating at the same tim)
     if(e.data.type === 'initial')  {  //only staty the thread starts
         let y = e.data.y;
+        console.log("giredi: ")
         loop(y);
+
     }
 };
 
