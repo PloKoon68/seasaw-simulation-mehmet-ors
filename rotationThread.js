@@ -97,7 +97,6 @@ async function loop() {
         postMessage({ finished: finished, angle: angle, angularAcceleration: angularAcceleration, angularVelocity: angularVelocity });  //send  to main.js it will update (rotate)
         await wait(loopPeriod);
     }
-        console.log("bitti")
 
 }
 

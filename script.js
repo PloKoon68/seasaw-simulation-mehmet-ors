@@ -230,7 +230,7 @@ function createNewBall(event) {
 
 
 
-const rotateButton = document.querySelector('.pause-button');
+const rotateButton = document.getElementById('pause-button');
 function rotateSeesaw() {
     pDrawSeesaw(20); // example: rotate 15 degrees
 
@@ -469,3 +469,56 @@ function loadStateFromLocalStorage() {
 window.addEventListener("beforeunload", saveStateToLocalStorage);
 window.addEventListener("load", loadStateFromLocalStorage);
 
+
+function resetSeesaw() {
+    // Reset balls and measuers
+    balls = [];
+    measures = {
+        left_side: {weight: 0, rawTorque: 0, netTorque: 0},
+        right_side: {weight: 0, rawTorque: 0, netTorque: 0},
+        angle: 0,
+        angularAcceleration: 0,
+        angularVelocity: 0
+    };
+
+    // Stop all threads
+    fallThreads.forEach(thread => thread.terminate());
+    fallThreads.clear();
+    if (rotationThread) {
+        rotationThread.terminate();
+        rotationThread = null;
+    }
+
+    // LocalStorage'ı temizle
+    localStorage.removeItem("seesawState");
+
+    // Yeni top oluştur
+    const initialWeight = Math.floor(Math.random() * 10) + 1;
+    const initialRadius = 4 + initialWeight / 3;
+    balls.push({
+        x: 0,
+        y: 0,
+        r: initialRadius,
+        color: randomDarkColor(),
+        visible: false,
+        falling: false,
+        targetX: null,
+        targetY: null,
+        weight: initialWeight,
+        d: null,
+        onRightSide: null,
+        id: ballCount++
+    });
+
+    htmlUpdateNextWeight();
+    htmlUpdateLeftWeight();
+    htmlUpdateRightWeight();
+    htmlUpdateLeftRawTorque();
+    htmlUpdateRightRawTorque();
+    htmlUpdateRotationParameters();
+
+
+    draw();
+}
+
+document.getElementById("reset-button").addEventListener("click", resetSeesaw);
