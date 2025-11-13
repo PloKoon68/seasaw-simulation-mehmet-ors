@@ -85,24 +85,13 @@ function resetSeesaw() {
 
     draw();
 }
+document.getElementById("reset-button").addEventListener("click", resetSeesaw);
 
 
 
 
+//pause
 const pauseButton = document.getElementById("pause-button");
-
-pauseButton.addEventListener('click', function() {
-    if (this.id === 'pause-button') {
-        // Eğer butona tıklandığında ID'si 'pause-button' ise
-        this.textContent = 'Continue';
-        this.id = 'continue-button';
-    } else {
-        // Eğer butona tıklandığında ID'si 'continue-button' ise
-        this.textContent = 'Pause';
-        this.id = 'pause-button';
-    }
-})
-
 pauseButton.addEventListener("click", () => {
     if (!isPaused) {
         pauseSimulation();
@@ -112,10 +101,7 @@ pauseButton.addEventListener("click", () => {
     isPaused = !isPaused;
 });
 
-
 function pauseSimulation() {
-
-    console.log("pause ettim")
     // Delete all active threasd
     if (rotationThread)
         terminateRotationThread();
@@ -133,7 +119,6 @@ function continueSimulation() {
 
     //continue the therads from where they were left
     let lastAngularVelocity = measures.angularVelocity
-    console.log("bastım ")
     startRotation(lastAngularVelocity)
     
     for(let i = 0; i < balls.length; i++)
@@ -147,12 +132,6 @@ function continueSimulation() {
     pauseButton.style.backgroundColor = "rgb(229, 222, 14)";
 
 }
-
-
-
-document.getElementById("reset-button").addEventListener("click", resetSeesaw);
-console.log("d: ", document.getElementsByClassName("continue-button")[0])
-
 
 //////////////////////////////////////////////
 
