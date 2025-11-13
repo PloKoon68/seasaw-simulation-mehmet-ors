@@ -12,11 +12,19 @@
         <div class="top-indicators">
             <div class="top-indicator"> 
                 <span>Angle</span>
-                <span>18</span>
+                <span id="angle">0</span>
+            </div>
+            <div class="top-indicator"> 
+                <span>Angular Velocity</span>
+                <span id="angular-velocity">0</span>
+            </div>
+            <div class="top-indicator"> 
+                <span>Angular Acceleration</span>
+                <span id="angular-acceleration">0</span>
             </div>
             <div class="top-indicator"> 
                 <span>Next Weight</span>
-                <span>4</span>
+                <span id="next-weight">0</span>
             </div>
         </div>
 
@@ -28,13 +36,15 @@
 
             <div class="side-indicator left">
                 <div><b>Left Side</b></div>
-                <div>Weight: 321</div>
-                <div>Torque: 24</div>
+                <div>Weight: <span id="left-weight">0</span> kg</div>
+                <div>Raw Torque: <span id="left-raw-torque">0</span> N.px</div>
+                <div>Net Torque: <span id="left-net-torque">0</span> N.px</div>
             </div>
             <div class="side-indicator right">
                 <div><b>Right Side</b></div>
-                <div>Weight: 32</div>
-                <div>Torque: 12</div>
+                <div>Weight: <span id="right-weight">0</span> kg</div>
+                <div>Raw Torque: <span id="right-raw-torque">0</span> N.px</div>
+                <div>Net Torque: <span id="right-net-torque">0</span> N.px</div>
             </div>
         </div>
 

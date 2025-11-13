@@ -62,7 +62,7 @@ async function wait(ms) {
 async function loop() {
     let finished = false;
 
-    while (true) {
+    while (!finished) {
         if(Math.abs(angle) > 30) {
             angularAcceleration = 0;
             angularVelocity = 0;

@@ -16,12 +16,46 @@ const DROP_BALL_HORIZONTAL_LIMIT = 10  // if mouse is outside 10 percent to the 
 
 
 let measures = {
-    left_side: {weight: 0, rawTorque: 0},
-    right_side: {weight: 0, rawTorque: 0},
+    left_side: {weight: 0, rawTorque: 0, netTorque: 0},
+    right_side: {weight: 0, rawTorque: 0, netTorque: 0},
     angle: 0,
     angularAcceleration: 0,
     angularVelocity: 0
 }
+
+
+function updateIndicators() {
+    document.getElementById("angle-value").textContent = measures.angle.toFixed(1);
+    document.getElementById("left-weight").textContent = measures.left_side.weight.toFixed(1);
+    document.getElementById("right-weight").textContent = measures.right_side.weight.toFixed(1);
+    document.getElementById("left-torque").textContent = measures.left_side.rawTorque.toFixed(1);
+    document.getElementById("right-torque").textContent = measures.right_side.rawTorque.toFixed(1);
+}
+
+
+function htmlUpdateNextWeight(){
+    document.getElementById("next-weight").textContent = balls[balls.length-1].weight;
+}
+
+
+function htmlUpdateRightWeight() {document.getElementById("right-weight").textContent = measures.right_side.weight;}
+function htmlUpdateLeftWeight() {document.getElementById("left-weight").textContent = measures.left_side.weight;}
+
+function htmlUpdateRightRawTorque() {document.getElementById("right-raw-torque").textContent = measures.right_side.rawTorque.toFixed(1);}
+function htmlUpdateLeftRawTorque() {document.getElementById("left-raw-torque").textContent = measures.left_side.rawTorque.toFixed(1);}
+
+
+function htmlUpdateRotationParameters() {
+    document.getElementById("right-net-torque").textContent = measures.right_side.netTorque.toFixed(2);
+    document.getElementById("left-net-torque").textContent = measures.left_side.netTorque.toFixed(2);
+
+
+    document.getElementById("angle").textContent = measures.angle.toFixed(2);
+    document.getElementById("angular-velocity").textContent = measures.angularVelocity.toFixed(4);
+    document.getElementById("angular-acceleration").textContent = measures.angularAcceleration.toFixed(4);
+}
+
+
 
 //p prefix means percentage, instead of raw pixels
 const percentage_to_px = (percentage) => {
@@ -103,8 +137,6 @@ function updateFallingBallTarget(ball) {
     }
 }
 
-
-
 function updateDroppedBallPositionY(ball, angle) {    // called for each ball when the rotation thread updates the angle
     const radian = angle * Math.PI / 180;
 
@@ -121,6 +153,12 @@ function horizontalDistanceToPivot(ball) {
     return ball.d * Math.cos(radian) + Math.sin(radian) * (PLANK_WIDTH/2 + ball.r)
 }
 
+function updateNetTorque() {
+    const radian = measures.angle * Math.PI / 180;
+    
+    measures.right_side.netTorque = measures.right_side.rawTorque * Math.cos(radian)
+    measures.left_side.netTorque = measures.left_side.rawTorque * Math.cos(radian)
+}
 
 
 ///////////////////////
@@ -172,8 +210,9 @@ const initialBall = {
 }
 
 balls.push(initialBall); 
+htmlUpdateNextWeight();
 
-function create_new_ball(event) {
+function createNewBall(event) {
     const weight = Math.floor(Math.random() * 10) + 1;
     const r = 4 + weight/3;
 
@@ -194,6 +233,8 @@ function create_new_ball(event) {
         onRightSide: null,
         id: ballCount++
     }); 
+
+    htmlUpdateNextWeight();
 }
 
 
@@ -249,7 +290,8 @@ function startFalling(ball) {
     fallThread.onmessage = function (e) {
         ball.y = e.data.y;   // update balls current position
         draw();
-        if (e.data.done) {
+
+        if (e.data.done) {   // the moment ball has fallen and touches the plank
 
             ball.d = distanceToCenterFromBallTouchPoint(ball.x, ball.y, ball.r);  //d is negative if ball is on the left arm of plank
             ball.falling = false;   //ball falled
@@ -264,16 +306,24 @@ function startFalling(ball) {
 
 
 function updateTorque(ball) {
-    //torque calculation: d * w
-    
+    //torque calculation: d * w    
     const torque = horizontalDistanceToPivot(ball) * ball.weight;
+
+
+    //update measures object and html indicators
     if(ball.x >= 50) {
         measures.right_side.weight += ball.weight;
         measures.right_side.rawTorque += torque;
+
+        htmlUpdateRightWeight();
+        htmlUpdateRightRawTorque();   
     }
     else {
         measures.left_side.weight += ball.weight;
         measures.left_side.rawTorque += Math.abs(torque);
+
+        htmlUpdateLeftWeight();
+        htmlUpdateLeftRawTorque();
     }
 
     draw()
@@ -305,8 +355,7 @@ function startRotation() {
         measures.angle = e.data.angle; // update ball position
         measures.angularAcceleration = e.data.angularAcceleration
         measures.angularVelocity = e.data.angularVelocity
-        
-
+    
         //update already dropped balls positions
         for(let i = 0; i < balls.length-1; i++) {   
             if(!balls[i].falling) 
@@ -322,11 +371,18 @@ function startRotation() {
                 }
             }
         }
-        
         if(e.data.finished) {
             rotationThread.terminate() //finish thread
             rotationThread = null;  
+
+            //angular velocity and acceleration becomes 0
+            measures.angularVelocity = 0;
+            measures.angularAcceleration = 0;
         }
+
+        updateNetTorque();  // update net tork values of right and left sde when angle is updated
+        htmlUpdateRotationParameters();
+
         draw();             
     };
 }
@@ -360,7 +416,7 @@ canvas.addEventListener('click', (event) => {
     balls[lastBallIndex].falling = true;
     calculateBalltargetY(balls[lastBallIndex], measures.angle)
     startFalling(balls[lastBallIndex])
-    create_new_ball(event)
+    createNewBall(event)
     draw();
 });
 
