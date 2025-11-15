@@ -18,7 +18,7 @@ export function updateFallingBallTarget(ball) {
     }
 }
 
-export function updateDroppedBallPositionY(ball, angle) {    // called for each ball when the rotation thread updates the angle
+export function updateDroppedBallPosition(ball, angle) {    // called for each ball when the rotation thread updates the angle
     const radian = angle * Math.PI / 180;
 
     const newY = ball.d * Math.sin(radian) - (ball.r + PLANK_WIDTH/2) * Math.cos(radian) + 50;

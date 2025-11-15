@@ -7,8 +7,8 @@ let dynamicTargetY;
 onmessage = function(e) {
     dynamicTargetY = e.data.targetY;   //targetY may update during fall (if plank is keep rotating at the same tim)
     if(e.data.type === 'initial')  {  //only staty the thread starts
+        console.log("şuradadevam düşüş")
         let y = e.data.y;
-
         //if loaded saved state, continue with last fallSpeed
         if(e.data.loadedFallSpeed) loadedFallSpeed = e.data.loadedFallSpeed
 

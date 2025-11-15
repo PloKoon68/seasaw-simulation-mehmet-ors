@@ -4,7 +4,7 @@ import { updateNetTorque } from '../physics.js';
 import { htmlUpdateLeftWeight, htmlUpdateRightWeight, htmlUpdateLeftRawTorque, htmlUpdateRightRawTorque, htmlUpdateRotationParameters, htmlUpdateRotationIndicator     } from '../ui_updates.js';
 import { draw } from '../drawing.js';
 import { playImpactSound, addLog } from '../actions.js';
-import { distanceToCenterFromBallTouchPoint, horizontalDistanceToPivot, updateDroppedBallPositionY, calculateBalltargetY, updateFallingBallTarget  } from '../physics.js';
+import { distanceToCenterFromBallTouchPoint, horizontalDistanceToPivot, updateDroppedBallPosition, calculateBalltargetY, updateFallingBallTarget  } from '../physics.js';
  
 
 
@@ -97,7 +97,7 @@ export function startRotation(loadedAngularVelocity) {
         //update already dropped balls positions
         for(let i = 0; i < balls.length-1; i++) {   
             if(!balls[i].falling) 
-                updateDroppedBallPositionY(balls[i], measures.angle)
+                updateDroppedBallPosition(balls[i], measures.angle)
         }
 
         if(measures.angle !== 30 && measures.angle !== -30) {

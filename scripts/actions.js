@@ -2,7 +2,6 @@ import { percentage_to_px } from './drawing.js';
 import { measures, rotationThread, pauseButton, balls } from './main.js';
 import { startFalling, startRotation, terminateFallingThreads, terminateRotationThread  } from './threads/threadOperations.js';
  
-
 //pause - continue
 export function pauseSimulation() {
     // Delete all active threasd
@@ -17,16 +16,15 @@ export function pauseSimulation() {
     pauseButton.classList.remove("pause-button");
     pauseButton.style.backgroundColor = "#27ae60";
 }
-
 export function continueSimulation() {
-
     //continue the therads from where they were left
     let lastAngularVelocity = measures.angularVelocity
     startRotation(lastAngularVelocity)
     
     for(let i = 0; i < balls.length; i++)
-        if(balls[i].falling) 
+        if(balls[i].falling) {
             startFalling(balls[i], balls[i].loadedFallSpeed)
+        }
 
     //update in html
     pauseButton.textContent = "Pause";

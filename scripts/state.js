@@ -1,12 +1,11 @@
 import { LENGTH, ctx, PLANK_LENGTH, PLANK_WIDTH, balls, HEIGHT, isPaused , measures, setMeasures, setBalls, setIsPaused, ballCount, setBallCount } from './main.js';
 import { htmlUpdateLeftWeight, htmlUpdateRightWeight, htmlUpdateLeftRawTorque, htmlUpdateRightRawTorque, htmlUpdateRotationParameters, htmlUpdateNextWeight    } from './ui_updates.js';
-import { startRotation, terminateFallingThreads, terminateRotationThread  } from './threads/threadOperations.js';
+import { startRotation, startFalling, terminateFallingThreads, terminateRotationThread  } from './threads/threadOperations.js';
 import { continueSimulation, pauseSimulation, logsList } from './actions.js';
 import { draw } from './drawing.js';
 
  
 export function saveStateToLocalStorage() {
-    console.log("kaydedioy")
     const state = {
         balls: balls,
         measures: measures,
@@ -22,6 +21,7 @@ export function loadStateFromLocalStorage() {
     if (savedState) {
         const state = JSON.parse(savedState);
         
+        console.log("loaded: ", state.balls)
         setBalls(state.balls)
         setMeasures(state.measures)
         setIsPaused(state.isPaused)        
@@ -39,8 +39,10 @@ export function loadStateFromLocalStorage() {
             startRotation(loadedAngularVelocity)
             
             for(let i = 0; i < balls.length; i++)
-                if(balls[i].falling) 
+                if(balls[i].falling) {
+                console.log("ucuyor:", i, balls[i].loadedFallSpeed)
                     startFalling(balls[i], balls[i].loadedFallSpeed)
+                }
         }
         else {
             pauseSimulation();
