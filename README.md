@@ -57,7 +57,8 @@ To isolate the motions of individual physical objects heavy calculations (just l
 -   For physical accuracy, the torque calculation uses the **Lever Arm principle**, which accounts for the seesaw's current angle (`cos(θ)`) and multiplies it with `d * w` raw torque formula.
 
 α = τ_net / I
- **`α (Alpha): Angular Acceleration`**. This determines how quickly the seesaw's rotational speed changes would change.
+
+**`α (Alpha): Angular Acceleration`**. This determines how quickly the seesaw's rotational speed changes would change.
  
  **`τ_net (Tau_net): Net Torque`**. This is the total rotational force acting on the seesaw. It is the multiplication of (`cos(θ)`) and the difference between the raw torque from the right side and the from the left side.
 τ_net = Σ(τ_right_side) - Σ(τ_left_side)
