@@ -3,7 +3,7 @@ import { draw, percentage_to_px } from './drawing.js';
 import { calculateBalltargetY } from './physics.js';
 import { htmlUpdateNextWeight } from './ui_updates.js';
 import { saveStateToLocalStorage, loadStateFromLocalStorage, resetSeesaw, randomDarkColor } from './state.js';
-import { startFalling, startRotation } from './threads/threadOperations.js';
+import { startFalling, startRotation, updateTorque } from './threads/threadOperations.js';
 import { continueSimulation, pauseSimulation  } from './actions.js';
 
 
@@ -108,11 +108,9 @@ canvas.addEventListener('mousedown', (event) => {
     // Canvas üzerindeki tıklama koordinatlarını al (piksel cinsinden)
     const clickX = event.clientX;
     const clickY = event.clientY;
-
     // Yakalanacak bir top aramak için düşmüş toplar arasında gezin
     for (let i = 0; i < balls.length - 1; i++) {
         const ball = balls[i];
-
         // Sadece düşmüş ve tahterevalli üzerindeki topları kontrol et
         if (!ball.falling) {
      
@@ -124,11 +122,15 @@ canvas.addEventListener('mousedown', (event) => {
             const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
             const pxRadius = percentage_to_px(ball.r)
     
+            
 
             if (distance <= pxRadius) {
                 isDragging = true;  // Sürükleme başladı!
-                draggingBall = ball;
+                draggingBall = ball;    
+
+                ball.oldX = ball.x;
                 ball.oldD = ball.d;
+
                 break; // Döngüyü sonlandır, çünkü bir top bulduk.
             }
         }
@@ -172,25 +174,18 @@ canvas.addEventListener('mousemove', (event) => {
 
 canvas.addEventListener('mouseup', (event) => {
     // Eğer bir sürükleme işlemi aktifse...
+    
     if (isDragging) {
-        if(draggingBall.x >= 50) {
-            console.log("sağı güncelle")
+        if(draggingBall.oldX <= 50) {
             measures.left_side.weight -= draggingBall.weight;
-            measures.right_side.weight += draggingBall.weight;
-
-            measures.left_side.rawTorque -= draggingBall.weight * draggingBall.oldD;
-            measures.right_side.rawTorque += draggingBall.weight * draggingBall.d;
+            measures.left_side.rawTorque -= draggingBall.rawTorque;
         }
         else {
-            console.log("solu güncelle")
             measures.right_side.weight -= draggingBall.weight;
-            measures.left_side.weight += draggingBall.weight;
-
-            measures.right_side.rawTorque -= draggingBall.weight * draggingBall.oldD;
-            measures.left_side.rawTorque += draggingBall.weight * draggingBall.d;
-
+            measures.right_side.rawTorque -= draggingBall.weight * Math.abs(draggingBall.oldD);
         }
-        startFalling(draggingBall);
+   
+        updateTorque(draggingBall);
         isDragging = false; // Sürükleme bitti!
         draggingBall = null; // Sürüklenen topu serbest bırak
         

@@ -14,7 +14,6 @@ export function startFalling(ball, loadedFallSpeed) {
     // Add threadto map, bonding it with relevant ball (with ball id)
     fallThreads.set(ball.id, fallThread);
 
-
     fallThread.postMessage({
         type: 'initial',
         targetY: ball.targetY,
@@ -46,23 +45,23 @@ export function startFalling(ball, loadedFallSpeed) {
 
 export function updateTorque(ball) {
     //torque calculation: d * w    
-    const torque = horizontalDistanceToPivot(ball) * ball.weight;
+    const rawTorque = Math.abs(horizontalDistanceToPivot(ball) * ball.weight);
+    ball.rawTorque = rawTorque;
 
     //update measures object and html indicators
     if(ball.x >= 50) {
         measures.right_side.weight += ball.weight;
-        measures.right_side.rawTorque += torque;
-
-        htmlUpdateRightWeight();
-        htmlUpdateRightRawTorque();   
+        measures.right_side.rawTorque += rawTorque; 
     }
     else {
         measures.left_side.weight += ball.weight;
-        measures.left_side.rawTorque += Math.abs(torque);
-
-        htmlUpdateLeftWeight();
-        htmlUpdateLeftRawTorque();
+        measures.left_side.rawTorque += Math.abs(rawTorque);
     }
+
+    htmlUpdateRightWeight();
+    htmlUpdateRightRawTorque();
+    htmlUpdateLeftWeight();
+    htmlUpdateLeftRawTorque();
 
     draw()
 
