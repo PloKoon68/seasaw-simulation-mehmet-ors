@@ -8,7 +8,7 @@ export function calculateBalltargetY(ball, angle) {    // called for each ball w
     ball.targetY = newTargetY
 }
 
-export function updateFallingBallTarget(ball) {
+export function updateFallingBallTarget(ball) {        // as the seasaw rotates durin gthe fall of the weight, the y destiny of the weighr should be updated
     const thread = fallThreads.get(ball.id);
     if (thread) {
         thread.postMessage({

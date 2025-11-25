@@ -1,7 +1,7 @@
 import { percentage_to_px } from './drawing.js';
 import { measures, rotationThread, pauseButton, balls } from './main.js';
 import { startFalling, startRotation, terminateFallingThreads, terminateRotationThread  } from './threads/threadOperations.js';
- 
+
 //pause - continue
 export function pauseSimulation() {
     // Delete all active threasd
@@ -16,6 +16,7 @@ export function pauseSimulation() {
     pauseButton.classList.remove("pause-button");
     pauseButton.style.backgroundColor = "#27ae60";
 }
+
 export function continueSimulation() {
     //continue the therads from where they were left
     let lastAngularVelocity = measures.angularVelocity
@@ -31,7 +32,6 @@ export function continueSimulation() {
     pauseButton.classList.add("pause-button");
     pauseButton.classList.remove("continue-button");
     pauseButton.style.backgroundColor = "rgb(229, 222, 14)";
-
 }
 
 
@@ -81,8 +81,8 @@ export function playImpactSound(weight) {
         const ctx = getAudioContext();
         
         
-        const intensity = (weight**3) / 10; // between 0 and 1
-        
+        const intensity = (weight**3)/10; 
+
         // Oscillator (tone generator)
         const oscillator = ctx.createOscillator();
         const gainNode = ctx.createGain();

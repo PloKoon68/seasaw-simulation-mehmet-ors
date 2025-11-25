@@ -3,16 +3,16 @@ import { LENGTH, ctx, PLANK_LENGTH, PLANK_WIDTH, balls, HEIGHT, measures } from 
 
 // Draw function
 export function draw() {
-    ctx.clearRect(0, 0, LENGTH, HEIGHT);
+    ctx.clearRect(0, 0, LENGTH, HEIGHT);  //clear previous drawing state
 
     // draw ground
     pfillRectWith(0, 100, 60, 40, '#0d8a41ff');
 
-    // draw ruler grid to show distance from
-    drawDistanceGrid(50, 66.3);
-
     // draw pivot triangle at the center (50% width, 50% height)
     pdrawShape([[50, 50], [45, 60], [55, 60]], '#5d6767ff');
+    
+    // draw ruler grid to show distance from
+    drawDistanceGrid(50, 66.3);
 
     // draw seesaw plank
     pDrawSeesaw(measures.angle);
@@ -49,6 +49,7 @@ export function pdrawBall(ball) {
     ctx.beginPath();           
 
     ctx.arc(percentage_to_px(ball.x), percentage_to_px(ball.y), percentage_to_px(ball.r), 0, Math.PI * 2); // 2pi for full circle
+    
     ctx.fillStyle = ball.color;
     ctx.fill();
 
@@ -74,7 +75,6 @@ export function pDrawSeesaw(angleDegrees) {
     // Rotate around pivot
     ctx.rotate(angleRadians); // positive meaning right side heavier
 
-
     pdrawShape([
         [-PLANK_LENGTH/2, PLANK_WIDTH/2], [PLANK_LENGTH/2, PLANK_WIDTH/2],
         [PLANK_LENGTH/2, -PLANK_WIDTH/2], [-PLANK_LENGTH/2, -PLANK_WIDTH/2]
@@ -88,12 +88,10 @@ export function drawDistanceGrid(centerX, centerY) {
     centerX = percentage_to_px(centerX)
     centerY = percentage_to_px(centerY)
 
-    ctx.save();
-    
-    const gridSpacing = PLANK_LENGTH/2; // 40px space between numbers
     const gridCount = 5;    // 5 main lines
+    const gridSpacing = percentage_to_px(PLANK_LENGTH/2)/gridCount; // 40% space between numbers
     const rulerY = centerY + 45; // ruler position
-    
+
     // background
     ctx.fillStyle = 'rgba(238, 243, 233, 0.8)';
     ctx.fillRect(
@@ -104,7 +102,7 @@ export function drawDistanceGrid(centerX, centerY) {
     );
 
 
-    // ruker lines
+    // ruler lines
     for (let i = -gridCount; i <= gridCount; i++) {
         const x = centerX + (i * gridSpacing);
         const distance = Math.abs(i * gridSpacing);

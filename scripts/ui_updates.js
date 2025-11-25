@@ -23,8 +23,8 @@ export function htmlUpdateNextWeight(){document.getElementById("next-weight").te
 // update the arrow sign in html
 export function htmlUpdateRotationIndicator() {
     const indicator = document.getElementById('rotation-indicator');
-    
-    if(measures.angularAcceleration > 0 || measures.angularAcceleration < 0) {
+
+    if(measures.angularAcceleration !== 0) {
         // show the motion
         indicator.classList.add('visible');
         

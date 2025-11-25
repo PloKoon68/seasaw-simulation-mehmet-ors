@@ -1,5 +1,5 @@
-import { LENGTH, ctx, PLANK_LENGTH, PLANK_WIDTH, balls, HEIGHT, isPaused , measures, setMeasures, setBalls, setIsPaused, ballCount, setBallCount } from './main.js';
-import { htmlUpdateLeftWeight, htmlUpdateRightWeight, htmlUpdateLeftRawTorque, htmlUpdateRightRawTorque, htmlUpdateRotationParameters, htmlUpdateNextWeight    } from './ui_updates.js';
+import { balls, isPaused , measures, setMeasures, setBalls, setIsPaused, ballCount, setBallCount } from './main.js';
+import { htmlUpdateLeftWeight, htmlUpdateRightWeight, htmlUpdateLeftRawTorque, htmlUpdateRightRawTorque, htmlUpdateRotationParameters, htmlUpdateNextWeight } from './ui_updates.js';
 import { startRotation, startFalling, terminateFallingThreads, terminateRotationThread  } from './threads/threadOperations.js';
 import { continueSimulation, pauseSimulation, logsList } from './actions.js';
 import { draw } from './drawing.js';
@@ -21,10 +21,10 @@ export function loadStateFromLocalStorage() {
     if (savedState) {
         const state = JSON.parse(savedState);
         
-        console.log("loaded: ", state.balls)
         setBalls(state.balls)
         setMeasures(state.measures)
         setIsPaused(state.isPaused)        
+        loadLogs(state.logsList)
 
         // Updat UI
         htmlUpdateLeftWeight();
@@ -33,6 +33,7 @@ export function loadStateFromLocalStorage() {
         htmlUpdateRightRawTorque();
         htmlUpdateRotationParameters();
         htmlUpdateNextWeight()
+        
         //continue the therads from where they were left
         if(!isPaused) {
             let loadedAngularVelocity = measures.angularVelocity
@@ -40,7 +41,6 @@ export function loadStateFromLocalStorage() {
             
             for(let i = 0; i < balls.length; i++)
                 if(balls[i].falling) {
-                console.log("ucuyor:", i, balls[i].loadedFallSpeed)
                     startFalling(balls[i], balls[i].loadedFallSpeed)
                 }
         }
@@ -48,10 +48,6 @@ export function loadStateFromLocalStorage() {
             pauseSimulation();
             draw()
         }
-
-        //laod logs
-        loadLogs(state.logsList)
-        
     } else {
         console.log("No saved state found.");
         resetSeesaw()
@@ -84,7 +80,7 @@ function loadLogs(logsList) {
 
 
 export function resetSeesaw() {
-    if(isPaused) {
+    if(isPaused) {  //reset paused state to continuing
         continueSimulation()
         setIsPaused(false);
     }
@@ -105,9 +101,11 @@ export function resetSeesaw() {
         angularVelocity: 0
     }
     setMeasures(newMeasures)
+    
     // New initial ball
     const initialWeight = Math.floor(Math.random() * 10) + 1;
     const initialRadius = 4 + initialWeight / 3;
+
     setBallCount(0);
     balls.push({
         x: 0,

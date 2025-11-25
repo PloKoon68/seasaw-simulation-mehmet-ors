@@ -1,13 +1,48 @@
-export let balls = []
 
-import { draw } from './drawing.js';
+import { draw, percentage_to_px } from './drawing.js';
 import { calculateBalltargetY } from './physics.js';
 import { htmlUpdateNextWeight } from './ui_updates.js';
 import { saveStateToLocalStorage, loadStateFromLocalStorage, resetSeesaw, randomDarkColor } from './state.js';
-import { startFalling } from './threads/threadOperations.js';
+import { startFalling, startRotation } from './threads/threadOperations.js';
 import { continueSimulation, pauseSimulation  } from './actions.js';
 
- 
+
+//note: this system is assumed to have a square shape canvas (width=height)
+//also, for ease of use, percentage of width-height is used for location unit 
+//instead of raw pixel
+
+export const canvas = document.getElementById('seasawCnvs');  //main canvas element
+export const ctx = canvas.getContext('2d');   //for drawing objects in canvas
+export const rect = canvas.getBoundingClientRect();   //for boundary px
+
+export const LENGTH = canvas.width
+export const HEIGHT = canvas.height
+
+export const PLANK_LENGTH = 80;  //!!! CANVAS LENGTH IS 500px. 80% is 400px for seasaw plank, as expected in requirements.
+export const PLANK_WIDTH = 5;
+
+export let balls = []
+
+export let ballCount = 0;
+
+let isDragging = false;
+let draggingBall = null
+
+export let measures = {
+    left_side: {weight: 0, rawTorque: 0, netTorque: 0},
+    right_side: {weight: 0, rawTorque: 0, netTorque: 0},
+    angle: 0,
+    angularAcceleration: 0,
+    angularVelocity: 0
+}
+
+export let isPaused;
+
+//generate seperate thread for each falling ball
+export let fallThreads = new Map();  //store currently working threads in a set  {'ball_id': 'worker'}
+export let rotationThread;
+
+
 //set functions so other files functions can mutate them
 export function setMeasures(newMeasures) {
     measures = newMeasures;
@@ -30,51 +65,6 @@ export function setBallCount(newBallCount) {
 }
 
 
-export const canvas = document.getElementById('seasawCnvs');  //main canvas element
-
-export const ctx = canvas.getContext('2d');   //for drawing objects in canvas
-
-//note: this system is assumed to have a square shape canvas (width=height)
-//also, fror ease of use, percentage of width-height is used for location unit 
-//instead of raw pixel
-
-export const rect = canvas.getBoundingClientRect();   //for boundary px
-
-export const LENGTH = canvas.width
-export const HEIGHT = canvas.height
-
-export const PLANK_LENGTH = 80;  //!!! CANVAS LENGTH IS 500px. 80% is 400px for seasaw plank, as expected in requirements.
-export const PLANK_WIDTH = 5;
-
-export let ballCount = 0;
-export let isPaused;
-
-export let measures = {
-    left_side: {weight: 0, rawTorque: 0, netTorque: 0},
-    right_side: {weight: 0, rawTorque: 0, netTorque: 0},
-    angle: 0,
-    angularAcceleration: 0,
-    angularVelocity: 0
-}
-
-
-export const pauseButton = document.getElementById("pause-button");
-
-
-pauseButton.addEventListener("click", () => {
-    if (!isPaused) {
-        pauseSimulation();
-    } else {
-        continueSimulation();
-    }
-    isPaused = !isPaused;
-});
-
-
-
-
-
-
 function createNewBall(event) {
     const weight = Math.floor(Math.random() * 10) + 1;
     const r = 4 + weight/3;
@@ -83,7 +73,7 @@ function createNewBall(event) {
     const maxMovablePoint = Math.abs(Math.cos(radian) * (PLANK_LENGTH/2))   //dynamic based on angle of plank
 
     balls.push({ 
-        x: Math.min(50+maxMovablePoint, Math.max(50-maxMovablePoint, ((event.clientX - rect.left) / rect.width) * 100)),
+        x: Math.min(50+maxMovablePoint, Math.max(50-maxMovablePoint, ((event.clientX - rect.left) / LENGTH) * 100)),
         y: 10,
         r: r,
         color:  randomDarkColor(),
@@ -102,27 +92,123 @@ function createNewBall(event) {
 }
 
 
+export const pauseButton = document.getElementById("pause-button");
+pauseButton.addEventListener("click", () => {
+    if (!isPaused) {
+        pauseSimulation();
+    } else {
+        continueSimulation();
+    }
+    isPaused = !isPaused;
+});
 
 
 
+canvas.addEventListener('mousedown', (event) => {
+    // Canvas üzerindeki tıklama koordinatlarını al (piksel cinsinden)
+    const clickX = event.clientX;
+    const clickY = event.clientY;
 
-//generate seperate thread for each falling ball
-export let fallThreads = new Map();  //store currently working threads in a set
+    // Yakalanacak bir top aramak için düşmüş toplar arasında gezin
+    for (let i = 0; i < balls.length - 1; i++) {
+        const ball = balls[i];
 
-export let rotationThread;
+        // Sadece düşmüş ve tahterevalli üzerindeki topları kontrol et
+        if (!ball.falling) {
+     
+//          Math.min(50+maxMovablePoint, Math.max(50-maxMovablePoint, ((event.clientX - rect.left) / LENGTH) * 100));
+     
+            // ADIM 3: Tıklama noktası ile topun merkezi arasındaki mesafeyi hesapla (Pisagor Teoremi)
+            const distanceX = (clickX - rect.left) - percentage_to_px(ball.x);
+            const distanceY = (clickY - rect.top) - percentage_to_px(ball.y);
+            const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+            const pxRadius = percentage_to_px(ball.r)
+    
+
+            if (distance <= pxRadius) {
+                isDragging = true;  // Sürükleme başladı!
+                draggingBall = ball;
+                ball.oldD = ball.d;
+                break; // Döngüyü sonlandır, çünkü bir top bulduk.
+            }
+        }
+    }
+});
 
 // ball on mouse cursor
 canvas.addEventListener('mousemove', (event) => {
-    let lastBallIndex = balls.length-1
-    const radian = measures.angle * Math.PI / 180
-    const maxMovablePoint = Math.abs(Math.cos(radian) * (PLANK_LENGTH/2))   //dynamic based on angle of plank
+    if (isDragging && draggingBall) {
+        // Mouse'un X pozisyonunu % olarak al
+        const mouseX_pct = ((event.clientX - rect.left) / LENGTH) * 100;
+        const radian = measures.angle * Math.PI / 180;
+        const cosAngle = Math.cos(radian);
 
-    balls[lastBallIndex].x = Math.min(50+maxMovablePoint, Math.max(50-maxMovablePoint, ((event.clientX - rect.left) / rect.width) * 100));
-    balls[lastBallIndex].y = 10;
-    balls[lastBallIndex].visible = true;
+        // Topun olması gereken YENİ 'd' değerini hesapla
+        // Bu değeri SADECE GEÇİCİ olarak kullanacağız
+        let newD = (mouseX_pct - 50) / cosAngle;
 
-    draw();
+        // Tahterevallinin sınırlarını aşmasını engelle
+        const maxD = PLANK_LENGTH / 2;
+        newD = Math.max(-maxD, Math.min(maxD, newD));
+        draggingBall.d = newD; 
+        updateDroppedBallPositionY(draggingBall, measures.angle);
+
+        draw();
+    }
+    else {
+        let lastBallIndex = balls.length-1
+        const radian = measures.angle * Math.PI / 180
+        const maxMovablePoint = Math.abs(Math.cos(radian) * (PLANK_LENGTH/2))   //dynamic based on angle of plank
+
+        balls[lastBallIndex].x = Math.min(50+maxMovablePoint, Math.max(50-maxMovablePoint, ((event.clientX - rect.left) / LENGTH) * 100));
+        balls[lastBallIndex].y = 10;
+        balls[lastBallIndex].visible = true;
+        draw();
+    }
+
+
 });
+
+
+canvas.addEventListener('mouseup', (event) => {
+    // Eğer bir sürükleme işlemi aktifse...
+    if (isDragging) {
+        if(draggingBall.x >= 50) {
+            console.log("sağı güncelle")
+            measures.left_side.weight -= draggingBall.weight;
+            measures.right_side.weight += draggingBall.weight;
+
+            measures.left_side.rawTorque -= draggingBall.weight * draggingBall.oldD;
+            measures.right_side.rawTorque += draggingBall.weight * draggingBall.d;
+        }
+        else {
+            console.log("solu güncelle")
+            measures.right_side.weight -= draggingBall.weight;
+            measures.left_side.weight += draggingBall.weight;
+
+            measures.right_side.rawTorque -= draggingBall.weight * draggingBall.oldD;
+            measures.left_side.rawTorque += draggingBall.weight * draggingBall.d;
+
+        }
+        startFalling(draggingBall);
+        isDragging = false; // Sürükleme bitti!
+        draggingBall = null; // Sürüklenen topu serbest bırak
+        
+        // (Buraya daha sonra torku yeniden hesaplama gibi mantıklar gelecek)
+    } else {
+        if(!isPaused) {
+            let lastBallIndex = balls.length-1
+            balls[lastBallIndex].falling = true;
+            calculateBalltargetY(balls[lastBallIndex], measures.angle)
+            startFalling(balls[lastBallIndex])
+            createNewBall(event)
+            draw();
+        } else {
+            alert('First press continue please!')
+        }
+    }
+});
+
 
 // remove ball when leaves canvas
 canvas.addEventListener('mouseleave', () => {
@@ -131,21 +217,38 @@ canvas.addEventListener('mouseleave', () => {
 });
 
 
-// drop the ball on click
-canvas.addEventListener('click', (event) => {
-    if(!isPaused) {
-        let lastBallIndex = balls.length-1
-        balls[lastBallIndex].falling = true;
-        calculateBalltargetY(balls[lastBallIndex], measures.angle)
-        startFalling(balls[lastBallIndex])
-        createNewBall(event)
-        draw();
-    } else {
-        alert('First press continue please!')
-    }
-});
 
+
+
+document.getElementById("reset-button").addEventListener("click", resetSeesaw);
+
+//save and reload
 window.addEventListener("beforeunload", saveStateToLocalStorage);
 window.addEventListener("load", loadStateFromLocalStorage);
-document.getElementById("reset-button").addEventListener("click", resetSeesaw);
  
+
+export function updateDroppedBallPositionY(ball, angleDegrees) {
+    // Topun 'd' adresi henüz hesaplanmadıysa hiçbir şey yapma.
+    if (ball.d === null || ball.d === undefined) {
+        return;
+    }
+
+    const rad = angleDegrees * Math.PI / 180;
+
+    // Topun tahterevalliye göre YEREL (local) koordinatları
+    // Local X: Topun tahterevalli çizgisi üzerindeki pozisyonu ('d' değeri)
+    const localX = ball.d;
+
+    // Local Y: Topun tahterevalli merkez çizgisinin "üstünde" olduğu için negatif değer
+    // Topun merkezi, tahterevallinin üst yüzeyinden kendi yarıçapı kadar yukarıdadır.
+    const localY = -(PLANK_WIDTH / 2 + ball.r);
+
+    // Standart 2D Rotasyon Formülü
+    // Döndürülmüş bir sistemdeki bir noktanın global koordinatlarını bulur.
+    const globalX = localX * Math.cos(rad) - localY * Math.sin(rad);
+    const globalY = localX * Math.sin(rad) + localY * Math.cos(rad);
+
+    // Sonucu, pivot noktasının (50, 50) global koordinatlarına göre ayarla
+    ball.x = 50 + globalX;
+    ball.y = 50 + globalY;
+}

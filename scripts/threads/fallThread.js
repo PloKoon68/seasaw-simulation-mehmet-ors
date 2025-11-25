@@ -7,7 +7,6 @@ let dynamicTargetY;
 onmessage = function(e) {
     dynamicTargetY = e.data.targetY;   //targetY may update during fall (if plank is keep rotating at the same tim)
     if(e.data.type === 'initial')  {  //only staty the thread starts
-        console.log("şuradadevam düşüş")
         let y = e.data.y;
         //if loaded saved state, continue with last fallSpeed
         if(e.data.loadedFallSpeed) loadedFallSpeed = e.data.loadedFallSpeed
@@ -19,16 +18,17 @@ onmessage = function(e) {
 function wait(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-
+console.log("ch")
 async function loop(y) {
     while (true) {
-        fallSpeed += gravityAcceleration * (loopPeriod/1000);
-        y += fallSpeed;
+
         if(y > dynamicTargetY) {
+            y = dynamicTargetY
             postMessage({ y: dynamicTargetY, done: true, fallSpeed: fallSpeed }); // send new vertical position to main thread
             break;
         }
-        postMessage({ y }); // send new vertical position to main thread
+        fallSpeed += gravityAcceleration * (loopPeriod/1000);
+        y += fallSpeed;        postMessage({ y }); // send new vertical position to main thread
         await wait(loopPeriod)
     }   
 
