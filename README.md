@@ -66,9 +66,9 @@ To isolate the motions of individual physical objects heavy calculations (just l
 **`I (Inertia): Moment of Inertia`**. This represents the system's resistance to rotational motion. The heavier the objects and the farther they are from the pivot, the greater this resistance is.
 I = Σ(massᵢ × distanceᵢ²).
 
-### 3. Rendering: `<canvas>` vs. DOM
+### 3. Rendering: `<canvas>`
 
-The `<canvas>` API was chosen over DOM manipulation (`div` elements) to ensure fluid and high-performance animations. Canvas provides significantly better performance, especially in scenarios with hundreds of objects, and offers complete, pixel-level control over the rendering process.
+The `<canvas>` API was to ensure fluid and high-performance animations. Canvas provides great performance, especially in scenarios with hundreds of objects, and offers complete, pixel-level control over the rendering process.
 
 ## ⚠️ Trade-offs and Limitations
 
@@ -83,5 +83,6 @@ During the development of this project, AI tools (such as ChatGPT/Gemini) were u
 -   **Debugging:** Acted as a consultant for verifying complex trigonometric formulas (like the Lever Arm calculation) and identifying the root cause of `NaN` errors.
 -   **Algorithm Exploration:** Used to explore different architectural approaches for designing stateful Web Workers that can be updated dynamically.
 -   **Refactoring and Code Cleanup:** Provided suggestions for improving function names to be more semantic and for structuring the code into logical, modular blocks.
+-   **Styling suggestions**
 
-**AI was not used to generate or write the core logic or framework of the project.** All fundamental coding, architectural decisions, and the problem-solving process were conducted by me.
+**AI was not used to generate or write the core logic or framework of the project.** All fundamental coding, architectural decisions, and the problem-solving process were created by me.
