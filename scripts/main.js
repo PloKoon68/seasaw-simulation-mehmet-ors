@@ -113,17 +113,13 @@ canvas.addEventListener('mousedown', (event) => {
         const ball = balls[i];
         // Sadece düşmüş ve tahterevalli üzerindeki topları kontrol et
         if (!ball.falling) {
-     
-//          Math.min(50+maxMovablePoint, Math.max(50-maxMovablePoint, ((event.clientX - rect.left) / LENGTH) * 100));
-     
+
             // ADIM 3: Tıklama noktası ile topun merkezi arasındaki mesafeyi hesapla (Pisagor Teoremi)
             const distanceX = (clickX - rect.left) - percentage_to_px(ball.x);
             const distanceY = (clickY - rect.top) - percentage_to_px(ball.y);
             const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
             const pxRadius = percentage_to_px(ball.r)
     
-            
-
             if (distance <= pxRadius) {
                 isDragging = true;  // Sürükleme başladı!
                 draggingBall = ball;    
@@ -132,6 +128,7 @@ canvas.addEventListener('mousedown', (event) => {
                 ball.oldD = ball.d;
 
                 break; // Döngüyü sonlandır, çünkü bir top bulduk.
+            } else {
             }
         }
     }
@@ -182,7 +179,7 @@ canvas.addEventListener('mouseup', (event) => {
         }
         else {
             measures.right_side.weight -= draggingBall.weight;
-            measures.right_side.rawTorque -= draggingBall.weight * Math.abs(draggingBall.oldD);
+            measures.right_side.rawTorque -= draggingBall.rawTorque;
         }
    
         updateTorque(draggingBall);
