@@ -109,7 +109,7 @@ canvas.addEventListener('mousedown', (event) => {
     const clickX = event.clientX;
     const clickY = event.clientY;
     // Yakalanacak bir top aramak için düşmüş toplar arasında gezin
-    for (let i = 0; i < balls.length - 1; i++) {
+    for (let i = balls.length - 1; i >= 0; i--) {
         const ball = balls[i];
         // Sadece düşmüş ve tahterevalli üzerindeki topları kontrol et
         if (!ball.falling) {
@@ -126,6 +126,7 @@ canvas.addEventListener('mousedown', (event) => {
 
                 ball.oldX = ball.x;
                 ball.oldD = ball.d;
+                ball.isBeingDragged = true;
 
                 break; // Döngüyü sonlandır, çünkü bir top bulduk.
             } else {
@@ -158,7 +159,6 @@ canvas.addEventListener('mousemove', (event) => {
         let lastBallIndex = balls.length-1
         const radian = measures.angle * Math.PI / 180
         const maxMovablePoint = Math.abs(Math.cos(radian) * (PLANK_LENGTH/2))   //dynamic based on angle of plank
-
         balls[lastBallIndex].x = Math.min(50+maxMovablePoint, Math.max(50-maxMovablePoint, ((event.clientX - rect.left) / LENGTH) * 100));
         balls[lastBallIndex].y = 10;
         balls[lastBallIndex].visible = true;
@@ -184,6 +184,7 @@ canvas.addEventListener('mouseup', (event) => {
    
         updateTorque(draggingBall);
         isDragging = false; // Sürükleme bitti!
+        draggingBall.isBeingDragged = false;
         draggingBall = null; // Sürüklenen topu serbest bırak
         
         // (Buraya daha sonra torku yeniden hesaplama gibi mantıklar gelecek)
@@ -227,20 +228,15 @@ export function updateDroppedBallPositionY(ball, angleDegrees) {
 
     const rad = angleDegrees * Math.PI / 180;
 
-    // Topun tahterevalliye göre YEREL (local) koordinatları
-    // Local X: Topun tahterevalli çizgisi üzerindeki pozisyonu ('d' değeri)
     const localX = ball.d;
 
-    // Local Y: Topun tahterevalli merkez çizgisinin "üstünde" olduğu için negatif değer
-    // Topun merkezi, tahterevallinin üst yüzeyinden kendi yarıçapı kadar yukarıdadır.
+
     const localY = -(PLANK_WIDTH / 2 + ball.r);
 
-    // Standart 2D Rotasyon Formülü
-    // Döndürülmüş bir sistemdeki bir noktanın global koordinatlarını bulur.
+
     const globalX = localX * Math.cos(rad) - localY * Math.sin(rad);
     const globalY = localX * Math.sin(rad) + localY * Math.cos(rad);
 
-    // Sonucu, pivot noktasının (50, 50) global koordinatlarına göre ayarla
     ball.x = 50 + globalX;
     ball.y = 50 + globalY;
 }

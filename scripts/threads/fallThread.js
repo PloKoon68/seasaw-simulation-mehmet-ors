@@ -18,7 +18,6 @@ onmessage = function(e) {
 function wait(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-console.log("ch")
 async function loop(y) {
     while (true) {
 
