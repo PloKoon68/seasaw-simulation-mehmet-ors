@@ -127,7 +127,6 @@ canvas.addEventListener('mousedown', (event) => {
                 ball.oldX = ball.x;
                 ball.oldD = ball.d;
                 ball.isBeingDragged = true;
-
                 break; // Döngüyü sonlandır, çünkü bir top bulduk.
             } else {
             }
@@ -164,8 +163,6 @@ canvas.addEventListener('mousemove', (event) => {
         balls[lastBallIndex].visible = true;
         draw();
     }
-
-
 });
 
 

@@ -18,16 +18,16 @@ onmessage = function(e) {
 function wait(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+console.log("değişti")
 async function loop(y) {
     while (true) {
-
+        fallSpeed += gravityAcceleration * (loopPeriod/1000);
+        y += fallSpeed; 
         if(y > dynamicTargetY) {
-            y = dynamicTargetY
             postMessage({ y: dynamicTargetY, done: true, fallSpeed: fallSpeed }); // send new vertical position to main thread
             break;
-        }
-        fallSpeed += gravityAcceleration * (loopPeriod/1000);
-        y += fallSpeed;        postMessage({ y }); // send new vertical position to main thread
+        }       
+        postMessage({ y }); // send new vertical position to main thread
         await wait(loopPeriod)
     }   
 

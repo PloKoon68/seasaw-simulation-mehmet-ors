@@ -87,7 +87,7 @@ async function loop() {
                 finished = true 
             }
         }
-         if (targetAngle < 0) {
+        else if (targetAngle < 0) {
             if(angle < targetAngle) {
                 angle = targetAngle  
                 finished = true 

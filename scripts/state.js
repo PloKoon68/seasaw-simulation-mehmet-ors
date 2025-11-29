@@ -1,5 +1,5 @@
 import { balls, isPaused , measures, setMeasures, setBalls, setIsPaused, ballCount, setBallCount } from './main.js';
-import { htmlUpdateLeftWeight, htmlUpdateRightWeight, htmlUpdateLeftRawTorque, htmlUpdateRightRawTorque, htmlUpdateRotationParameters, htmlUpdateNextWeight } from './ui_updates.js';
+import { htmlUpdateLeftWeight, htmlUpdateRightWeight, htmlUpdateLeftRawTorque, htmlUpdateRightRawTorque, htmlUpdateRotationParameters, htmlUpdateNextWeight, htmlUpdateRotationIndicator } from './ui_updates.js';
 import { startRotation, startFalling, terminateFallingThreads, terminateRotationThread  } from './threads/threadOperations.js';
 import { continueSimulation, pauseSimulation, logsList } from './actions.js';
 import { draw } from './drawing.js';
@@ -66,15 +66,17 @@ export function randomDarkColor() {
 }
 
 function loadLogs(logsList) {
-    const logsPanel = document.querySelector('.logs-panel');
-    
-    logsList.forEach(logText => {
-        const log = document.createElement('div');
-        log.className = 'log-item';
-        log.textContent = logText;
-        logsPanel.appendChild(log);
-    });
-    logsPanel.scrollTop = logsPanel.scrollHeight;
+    if(logsList) {
+        const logsPanel = document.querySelector('.logs-panel');
+
+        logsList.forEach(logText => {
+            const log = document.createElement('div');
+            log.className = 'log-item';
+            log.textContent = logText;
+            logsPanel.appendChild(log);
+        });
+        logsPanel.scrollTop = logsPanel.scrollHeight;
+    }
 }
 
 
@@ -131,6 +133,7 @@ export function resetSeesaw() {
     htmlUpdateLeftRawTorque();
     htmlUpdateRightRawTorque();
     htmlUpdateRotationParameters();
+    htmlUpdateRotationIndicator()
 
     document.querySelector('.logs-panel').innerHTML = '';
 
