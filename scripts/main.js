@@ -1,6 +1,6 @@
 
 import { draw, percentage_to_px } from './drawing.js';
-import { calculateBalltargetY } from './physics.js';
+import { calculateBalltargetY, xValueLimit } from './physics.js';
 import { htmlUpdateNextWeight } from './ui_updates.js';
 import { saveStateToLocalStorage, loadStateFromLocalStorage, resetSeesaw, randomDarkColor } from './state.js';
 import { startFalling, updateTorque } from './threads/threadOperations.js';
@@ -69,11 +69,10 @@ function createNewBall(event) {
     const weight = Math.floor(Math.random() * 10) + 1;
     const r = 4 + weight/3;
 
-    const radian = measures.angle * Math.PI / 180
-    const maxMovablePoint = Math.abs(Math.cos(radian) * (PLANK_LENGTH/2))   //dynamic based on angle of plank
+    const percentageX = ((event.clientX - rect.left) / LENGTH) * 100   //percentage location x of point client clicked
 
     balls.push({ 
-        x: Math.min(50+maxMovablePoint, Math.max(50-maxMovablePoint, ((event.clientX - rect.left) / LENGTH) * 100)),
+        x: xValueLimit(percentageX, r),
         y: 10,
         r: r,
         color:  randomDarkColor(),
@@ -101,8 +100,6 @@ pauseButton.addEventListener("click", () => {
     }
     isPaused = !isPaused;
 });
-
-
 
 canvas.addEventListener('mousedown', (event) => {
     // Canvas üzerindeki tıklama koordinatlarını al (piksel cinsinden)
@@ -154,9 +151,9 @@ canvas.addEventListener('mousemove', (event) => {
     }
     else {
         let lastBallIndex = balls.length-1
-        const radian = measures.angle * Math.PI / 180
-        const maxMovablePoint = Math.abs(Math.cos(radian) * (PLANK_LENGTH/2))   //dynamic based on angle of plank
-        balls[lastBallIndex].x = Math.min(50+maxMovablePoint, Math.max(50-maxMovablePoint, ((event.clientX - rect.left) / LENGTH) * 100));
+        const percentageX = ((event.clientX - rect.left) / LENGTH) * 100   //percentage location x of point client clicked
+
+        balls[lastBallIndex].x = xValueLimit(percentageX,  balls[lastBallIndex].r);
         balls[lastBallIndex].y = 10;
         balls[lastBallIndex].visible = true;
         draw();
@@ -166,7 +163,6 @@ canvas.addEventListener('mousemove', (event) => {
 canvas.addEventListener('mouseup', (event) => {
     // Eğer bir sürükleme işlemi aktifse...
     if (isDragging) {
-
         if(draggingBall.oldX <= 50) {
             measures.left_side.weight -= draggingBall.weight;
             measures.left_side.rawTorque -= draggingBall.rawTorque;
@@ -179,7 +175,7 @@ canvas.addEventListener('mouseup', (event) => {
 //        draggingBall.d = distanceToCenterFromBallTouchPoint(draggingBall.x, draggingBall.y, draggingBall.r);  //d is negative if ball is on the left arm of plank
     
         updateTorque(draggingBall);
-        isDragging = false; // Sürükleme bitti!
+        isDragging = false;  // Sürükleme bitti!
         draggingBall.isBeingDragged = false;
         draggingBall = null; // Sürüklenen topu serbest bırak
     } else {

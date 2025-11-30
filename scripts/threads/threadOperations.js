@@ -2,9 +2,9 @@ import { measures, balls, fallThreads, rotationThread, setRotationThread } from 
 import { updateNetTorque } from '../physics.js';
 
 import { htmlUpdateLeftWeight, htmlUpdateRightWeight, htmlUpdateLeftPotentialTorque, htmlUpdateRightPotentialTorque, htmlUpdateRotationParameters, htmlUpdateRotationIndicator } from '../ui_updates.js';
-import { draw, percentage_to_px } from '../drawing.js';
+import { draw } from '../drawing.js';
 import { playImpactSound, addLog } from '../actions.js';
-import { distanceToCenterFromBallTouchPoint, horizontalDistanceToPivot, updateDroppedBallPosition, calculateBalltargetY  } from '../physics.js';
+import { distanceToCenterFromBallTouchPoint, horizontalDistanceToPivot, updateDroppedBallPosition, calculateBalltargetY, xValueLimit } from '../physics.js';
  
 
 
@@ -24,6 +24,8 @@ export function startFalling(ball, loadedFallSpeed) {
     fallThread.onmessage = function (e) {
         ball.y = e.data.y;   // update balls current position
         ball.savedFallSpeed = e.data.fallSpeed; //saving for load state
+        ball.x = xValueLimit(ball.x, ball.r)  
+        console.log("rre")
         draw();
 
         if (e.data.done) {   // the moment ball has fallen and touches the plank
@@ -90,7 +92,7 @@ export function startRotation(loadedAngularVelocity) {
         measures.angle = e.data.angle; // update ball position
         measures.angularAcceleration = e.data.angularAcceleration
         measures.angularVelocity = e.data.angularVelocity
-        
+       console.log("s") 
         //update already dropped balls positions
         for(let i = 0; i < balls.length-1; i++) {   
             if(!balls[i].falling) {
@@ -98,15 +100,19 @@ export function startRotation(loadedAngularVelocity) {
             }
         }
 
+        //update falling balls target y and x limits
         if(measures.angle < 30 && measures.angle > -30) {
-
             for(let i = balls.length-1; i >= 0; i--) {
                 if(balls[i].falling) { //last n balls are falling, update their targetY
                     calculateBalltargetY(balls[i], measures.angle);  //last balls targetY change
                     updateFallingBallTarget(balls[i])                //send new targetY value to fallingThread of that ball
-                }
+
+                } 
             }
         }
+        const lastInd = balls.length-1
+        balls[lastInd].x = xValueLimit(balls[lastInd].x, balls[lastInd].r)  
+        
         if(e.data.finished) {
             terminateRotationThread();
   

@@ -1,5 +1,5 @@
 import { percentage_to_px } from './drawing.js';
-import { PLANK_WIDTH, measures, fallThreads, ctx } from './main.js';
+import { PLANK_WIDTH, PLANK_LENGTH, LENGTH, rect, measures } from './main.js';
 
 
 export let track = null
@@ -48,5 +48,13 @@ export function distanceToCenterFromBallTouchPoint(bx, by, r) {
 }
 
 
-export function calculateMaxPotentialTorque(ball) {
+export function xValueLimit(x, r) {
+    const radian = measures.angle * Math.PI / 180
+    const xMovableLimit = Math.cos(radian) * (PLANK_LENGTH/2)
+    const plankWidhExtention = Math.sin(radian) * ((PLANK_WIDTH/2) + r)
+    
+    const leftLimit = 50 - xMovableLimit + plankWidhExtention
+    const rightLimit = 50 + xMovableLimit + plankWidhExtention
+      //dynamic based on angle of plank
+    return Math.min(rightLimit, Math.max(leftLimit, x));
 }
