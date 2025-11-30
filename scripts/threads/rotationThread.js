@@ -9,8 +9,8 @@ const loopPeriod = 20;
 
 let terminate = false
 
-function calculateConstantCoefficient(netRawTorque, balls) { 
-    let nominator = netRawTorque  //τnet​=right∑​(ri)​.(mi)​.g.cos(θ)−left∑​(ri).(​mi).​g.cos(θ)
+function calculateConstantCoefficient(netPotentialTorque, balls) { 
+    let nominator = netPotentialTorque  //τnet​=right∑​(ri)​.(mi)​.g.cos(θ)−left∑​(ri).(​mi).​g.cos(θ)
                                   //since teta angle will change in time, it is a variable that will be pass in the main loop evey in every step
 
     let denominator = 0;   // I = ∑​mi.ri^2
@@ -28,9 +28,9 @@ function calculateConstantCoefficient(netRawTorque, balls) {
     return nominator/denominator;   //τnet​ / I
 }
 
-function updateTargetAngle(netRawTorque) {   //the part except cos(angle)
-    if(netRawTorque > 0) return 30
-    else if(netRawTorque < 0) return -30
+function updateTargetAngle(netPotentialTorque) {   //the part except cos(angle)
+    if(netPotentialTorque > 0) return 30
+    else if(netPotentialTorque < 0) return -30
     return 0
 }
 
@@ -40,17 +40,17 @@ onmessage = function(e) {
 
     if (e.data.type === 'update') {
         balls = e.data.balls;
-        const netRawTorque = e.data.measures.right_side.rawTorque - e.data.measures.left_side.rawTorque;
-        coefficient = calculateConstantCoefficient(netRawTorque, balls)
-        targetAngle = updateTargetAngle(netRawTorque);
+        const netPotentialTorque = e.data.measures.right_side.potentialTorque - e.data.measures.left_side.potentialTorque;
+        coefficient = calculateConstantCoefficient(netPotentialTorque, balls)
+        targetAngle = updateTargetAngle(netPotentialTorque);
     } else if(e.data.type === 'initial') { 
         // initial setup
         balls = e.data.balls
         angle = e.data.measures.angle
-        const netRawTorque = e.data.measures.right_side.rawTorque - e.data.measures.left_side.rawTorque;
+        const netPotentialTorque = e.data.measures.right_side.potentialTorque - e.data.measures.left_side.potentialTorque;
 
-        coefficient = calculateConstantCoefficient(netRawTorque, balls)
-        targetAngle = updateTargetAngle(netRawTorque);
+        coefficient = calculateConstantCoefficient(netPotentialTorque, balls)
+        targetAngle = updateTargetAngle(netPotentialTorque);
 
         //if loaded saved state, continue from last velocity
         if(e.data.loadedAngularVelocity) angularVelocity = e.data.loadedAngularVelocity

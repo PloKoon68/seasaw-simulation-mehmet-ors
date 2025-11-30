@@ -4,8 +4,8 @@ import { balls, measures } from './main.js';
 export function htmlUpdateRightWeight() {document.getElementById("right-weight").textContent = measures.right_side.weight;}
 export function htmlUpdateLeftWeight() {document.getElementById("left-weight").textContent = measures.left_side.weight;}
 
-export function htmlUpdateRightRawTorque() {document.getElementById("right-raw-torque").textContent = measures.right_side.rawTorque.toFixed(0)}
-export function htmlUpdateLeftRawTorque() {document.getElementById("left-raw-torque").textContent = measures.left_side.rawTorque.toFixed(0)}
+export function htmlUpdateRightPotentialTorque() {document.getElementById("right-raw-torque").textContent = measures.right_side.potentialTorque.toFixed(0)}
+export function htmlUpdateLeftPotentialTorque() {document.getElementById("left-raw-torque").textContent = measures.left_side.potentialTorque.toFixed(0)}
 
 export function htmlUpdateRotationParameters() {
     document.getElementById("right-net-torque").textContent = measures.right_side.netTorque.toFixed(0);

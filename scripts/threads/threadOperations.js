@@ -1,10 +1,10 @@
 import { measures, balls, fallThreads, rotationThread, setRotationThread } from '../main.js';
 import { updateNetTorque } from '../physics.js';
 
-import { htmlUpdateLeftWeight, htmlUpdateRightWeight, htmlUpdateLeftRawTorque, htmlUpdateRightRawTorque, htmlUpdateRotationParameters, htmlUpdateRotationIndicator     } from '../ui_updates.js';
-import { draw } from '../drawing.js';
+import { htmlUpdateLeftWeight, htmlUpdateRightWeight, htmlUpdateLeftPotentialTorque, htmlUpdateRightPotentialTorque, htmlUpdateRotationParameters, htmlUpdateRotationIndicator } from '../ui_updates.js';
+import { draw, percentage_to_px } from '../drawing.js';
 import { playImpactSound, addLog } from '../actions.js';
-import { distanceToCenterFromBallTouchPoint, horizontalDistanceToPivot, updateDroppedBallPosition, calculateBalltargetY, updateFallingBallTarget  } from '../physics.js';
+import { distanceToCenterFromBallTouchPoint, horizontalDistanceToPivot, updateDroppedBallPosition, calculateBalltargetY  } from '../physics.js';
  
 
 
@@ -45,25 +45,23 @@ export function startFalling(ball, loadedFallSpeed) {
 
 export function updateTorque(ball) {
     //torque calculation: d * w    
-    const rawTorque = Math.abs(horizontalDistanceToPivot(ball) * ball.weight);
-    ball.rawTorque = rawTorque;
+    const potentialTorque = Math.abs(horizontalDistanceToPivot(ball) * ball.weight);
+    ball.potentialTorque = potentialTorque;
 
     //update measures object and html indicators
     if(ball.x >= 50) {
         measures.right_side.weight += ball.weight;
-        measures.right_side.rawTorque += rawTorque; 
-    }
-    else {
+        measures.right_side.potentialTorque += potentialTorque; 
+    } else {
         measures.left_side.weight += ball.weight;
-        measures.left_side.rawTorque += Math.abs(rawTorque);
+        measures.left_side.potentialTorque += Math.abs(potentialTorque);
     }
 
     htmlUpdateRightWeight();
-    htmlUpdateRightRawTorque();
+    htmlUpdateRightPotentialTorque();
     htmlUpdateLeftWeight();
-    htmlUpdateLeftRawTorque();
+    htmlUpdateLeftPotentialTorque();
 
-    draw()
 
     if(rotationThread) {  //if the plank was on rotation during the ball touced the plank, update rotation parameters
         rotationThread.postMessage({
@@ -95,11 +93,12 @@ export function startRotation(loadedAngularVelocity) {
         
         //update already dropped balls positions
         for(let i = 0; i < balls.length-1; i++) {   
-            if(!balls[i].falling) 
+            if(!balls[i].falling) {
                 updateDroppedBallPosition(balls[i], measures.angle)
+            }
         }
 
-        if(measures.angle !== 30 && measures.angle !== -30) {
+        if(measures.angle < 30 && measures.angle > -30) {
 
             for(let i = balls.length-1; i >= 0; i--) {
                 if(balls[i].falling) { //last n balls are falling, update their targetY
@@ -140,3 +139,12 @@ export function terminateFallingThreads() {
     }
 }
 
+function updateFallingBallTarget(ball) {        // as the seasaw rotates durin gthe fall of the weight, the y destiny of the weighr should be updated
+    const thread = fallThreads.get(ball.id);
+    if (thread) {
+        thread.postMessage({
+            type: 'update',
+            targetY: ball.targetY
+        });
+    }
+}

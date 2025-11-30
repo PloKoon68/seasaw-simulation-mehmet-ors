@@ -1,10 +1,11 @@
 import { LENGTH, ctx, PLANK_LENGTH, PLANK_WIDTH, balls, HEIGHT, measures } from './main.js';
 
 
+
+
 // Draw function
 export function draw() {
     ctx.clearRect(0, 0, LENGTH, HEIGHT);  //clear previous drawing state
-
     // draw ground
     pfillRectWith(0, 100, 60, 40, '#0d8a41ff');
 
@@ -169,3 +170,77 @@ export function drawDistanceGrid(centerX, centerY) {
     
     ctx.restore();
 }
+
+
+
+    /* 
+
+
+    used to draw lines for debugging purpose
+
+    track = [
+        {
+            "x1": percentage_to_px(50),
+            "y1": percentage_to_px(50),
+            "x2": percentage_to_px(dx),
+            "y2": percentage_to_px(dy)
+        },
+        {
+            "x1": percentage_to_px(dx),
+            "y1": percentage_to_px(dy),
+            "x2": percentage_to_px(bx),
+            "y2": percentage_to_px(by)
+        }     
+    ]
+
+        track = [
+        {
+            "x1": percentage_to_px(50),
+            "y1": percentage_to_px(50),
+            "x2": percentage_to_px(50 + d * Math.cos(radian)),
+            "y2": percentage_to_px(50)
+        },
+        {
+            "x1": percentage_to_px(50 + d * Math.cos(radian)),
+            "y1": percentage_to_px(by),
+            "x2": percentage_to_px(bx),
+            "y2": percentage_to_px(by)
+        },
+        {
+            "x1": percentage_to_px(bx),
+            "y1": percentage_to_px(by),
+            "x2": percentage_to_px(bx),
+            "y2": percentage_to_px(by + r)
+        },
+                {
+            "x1": percentage_to_px(bx),
+            "y1": percentage_to_px(by),
+            "x2": percentage_to_px(bx),
+            "y2": percentage_to_px(by- r)
+        },
+        {
+            "x1": percentage_to_px(bx),
+            "y1": percentage_to_px(by),
+            "x2": percentage_to_px(bx - r),
+            "y2": percentage_to_px(by)
+        },
+        {
+            "x1": percentage_to_px(bx),
+            "y1": percentage_to_px(by),
+            "x2": percentage_to_px(bx + r),
+            "y2": percentage_to_px(by)
+        }           
+    ]
+
+function mockDraw() {
+    if(track) {
+        ctx.beginPath();
+        track.map((line => {
+            ctx.moveTo(line.x1, line.y1);
+            ctx.lineTo(line.x2, line.y2);
+        }))
+        ctx.stroke();
+    }else {
+    }
+}
+    */

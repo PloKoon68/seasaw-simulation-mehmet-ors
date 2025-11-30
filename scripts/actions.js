@@ -37,7 +37,6 @@ export function continueSimulation() {
 
 
 
-
 //log panel functions
 export function addLog(weight, side, distance) {
     const logsPanel = document.querySelector('.logs-panel');
@@ -108,7 +107,6 @@ export function playImpactSound(weight) {
         
         oscillator.start(ctx.currentTime);
         oscillator.stop(ctx.currentTime + 0.15);
-        
     } catch (e) {
         console.warn('Audio playback failed:', e);
     }

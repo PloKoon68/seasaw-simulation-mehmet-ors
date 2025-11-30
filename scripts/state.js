@@ -1,5 +1,5 @@
 import { balls, isPaused , measures, setMeasures, setBalls, setIsPaused, ballCount, setBallCount } from './main.js';
-import { htmlUpdateLeftWeight, htmlUpdateRightWeight, htmlUpdateLeftRawTorque, htmlUpdateRightRawTorque, htmlUpdateRotationParameters, htmlUpdateNextWeight, htmlUpdateRotationIndicator } from './ui_updates.js';
+import { htmlUpdateLeftWeight, htmlUpdateRightWeight, htmlUpdateLeftPotentialTorque, htmlUpdateRightPotentialTorque, htmlUpdateRotationParameters, htmlUpdateNextWeight, htmlUpdateRotationIndicator } from './ui_updates.js';
 import { startRotation, startFalling, terminateFallingThreads, terminateRotationThread  } from './threads/threadOperations.js';
 import { continueSimulation, pauseSimulation, logsList } from './actions.js';
 import { draw } from './drawing.js';
@@ -29,8 +29,8 @@ export function loadStateFromLocalStorage() {
         // Updat UI
         htmlUpdateLeftWeight();
         htmlUpdateRightWeight();
-        htmlUpdateLeftRawTorque();
-        htmlUpdateRightRawTorque();
+        htmlUpdateLeftPotentialTorque();
+        htmlUpdateRightPotentialTorque();
         htmlUpdateRotationParameters();
         htmlUpdateNextWeight()
         
@@ -96,8 +96,8 @@ export function resetSeesaw() {
     // Reset balls and measuers
     setBalls([]);
     let newMeasures = {
-        left_side: {weight: 0, rawTorque: 0, netTorque: 0},
-        right_side: {weight: 0, rawTorque: 0, netTorque: 0},
+        left_side: {weight: 0, potentialTorque: 0, netTorque: 0},
+        right_side: {weight: 0, potentialTorque: 0, netTorque: 0},
         angle: 0,
         angularAcceleration: 0,
         angularVelocity: 0
@@ -130,8 +130,8 @@ export function resetSeesaw() {
     htmlUpdateNextWeight();
     htmlUpdateLeftWeight();
     htmlUpdateRightWeight();
-    htmlUpdateLeftRawTorque();
-    htmlUpdateRightRawTorque();
+    htmlUpdateLeftPotentialTorque();
+    htmlUpdateRightPotentialTorque();
     htmlUpdateRotationParameters();
     htmlUpdateRotationIndicator()
 

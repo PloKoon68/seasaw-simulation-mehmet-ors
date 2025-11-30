@@ -3,7 +3,7 @@ import { draw, percentage_to_px } from './drawing.js';
 import { calculateBalltargetY } from './physics.js';
 import { htmlUpdateNextWeight } from './ui_updates.js';
 import { saveStateToLocalStorage, loadStateFromLocalStorage, resetSeesaw, randomDarkColor } from './state.js';
-import { startFalling, startRotation, updateTorque } from './threads/threadOperations.js';
+import { startFalling, updateTorque } from './threads/threadOperations.js';
 import { continueSimulation, pauseSimulation  } from './actions.js';
 
 
@@ -29,8 +29,8 @@ let isDragging = false;
 let draggingBall = null
 
 export let measures = {
-    left_side: {weight: 0, rawTorque: 0, netTorque: 0},
-    right_side: {weight: 0, rawTorque: 0, netTorque: 0},
+    left_side: {weight: 0, potentialTorque: 0, netTorque: 0},
+    right_side: {weight: 0, potentialTorque: 0, netTorque: 0},
     angle: 0,
     angularAcceleration: 0,
     angularVelocity: 0
@@ -113,13 +113,12 @@ canvas.addEventListener('mousedown', (event) => {
         const ball = balls[i];
         // Sadece düşmüş ve tahterevalli üzerindeki topları kontrol et
         if (!ball.falling) {
-
             // ADIM 3: Tıklama noktası ile topun merkezi arasındaki mesafeyi hesapla (Pisagor Teoremi)
             const distanceX = (clickX - rect.left) - percentage_to_px(ball.x);
             const distanceY = (clickY - rect.top) - percentage_to_px(ball.y);
             const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
             const pxRadius = percentage_to_px(ball.r)
-    
+
             if (distance <= pxRadius) {
                 isDragging = true;  // Sürükleme başladı!
                 draggingBall = ball;    
@@ -128,7 +127,6 @@ canvas.addEventListener('mousedown', (event) => {
                 ball.oldD = ball.d;
                 ball.isBeingDragged = true;
                 break; // Döngüyü sonlandır, çünkü bir top bulduk.
-            } else {
             }
         }
     }
@@ -165,11 +163,10 @@ canvas.addEventListener('mousemove', (event) => {
     }
 });
 
-
 canvas.addEventListener('mouseup', (event) => {
     // Eğer bir sürükleme işlemi aktifse...
-    
     if (isDragging) {
+
         if(draggingBall.oldX <= 50) {
             measures.left_side.weight -= draggingBall.weight;
             measures.left_side.rawTorque -= draggingBall.rawTorque;
@@ -178,13 +175,13 @@ canvas.addEventListener('mouseup', (event) => {
             measures.right_side.weight -= draggingBall.weight;
             measures.right_side.rawTorque -= draggingBall.rawTorque;
         }
-   
+
+//        draggingBall.d = distanceToCenterFromBallTouchPoint(draggingBall.x, draggingBall.y, draggingBall.r);  //d is negative if ball is on the left arm of plank
+    
         updateTorque(draggingBall);
         isDragging = false; // Sürükleme bitti!
         draggingBall.isBeingDragged = false;
         draggingBall = null; // Sürüklenen topu serbest bırak
-        
-        // (Buraya daha sonra torku yeniden hesaplama gibi mantıklar gelecek)
     } else {
         if(!isPaused) {
             let lastBallIndex = balls.length-1
@@ -207,29 +204,22 @@ canvas.addEventListener('mouseleave', () => {
 });
 
 
-
-
-
 document.getElementById("reset-button").addEventListener("click", resetSeesaw);
 
 //save and reload
 window.addEventListener("beforeunload", saveStateToLocalStorage);
 window.addEventListener("load", loadStateFromLocalStorage);
  
-
 export function updateDroppedBallPositionY(ball, angleDegrees) {
     // Topun 'd' adresi henüz hesaplanmadıysa hiçbir şey yapma.
-    if (ball.d === null || ball.d === undefined) {
+    if (!ball.d) {
         return;
     }
 
     const rad = angleDegrees * Math.PI / 180;
 
     const localX = ball.d;
-
-
     const localY = -(PLANK_WIDTH / 2 + ball.r);
-
 
     const globalX = localX * Math.cos(rad) - localY * Math.sin(rad);
     const globalY = localX * Math.sin(rad) + localY * Math.cos(rad);

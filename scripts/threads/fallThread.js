@@ -18,7 +18,7 @@ onmessage = function(e) {
 function wait(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-console.log("değişti")
+
 async function loop(y) {
     while (true) {
         fallSpeed += gravityAcceleration * (loopPeriod/1000);
