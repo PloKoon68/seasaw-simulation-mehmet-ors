@@ -25,7 +25,6 @@ export function startFalling(ball, loadedFallSpeed) {
         ball.y = e.data.y;   // update balls current position
         ball.savedFallSpeed = e.data.fallSpeed; //saving for load state
         ball.x = xValueLimit(ball.x, ball.r)  
-        console.log("rre")
         draw();
 
         if (e.data.done) {   // the moment ball has fallen and touches the plank
@@ -92,7 +91,6 @@ export function startRotation(loadedAngularVelocity) {
         measures.angle = e.data.angle; // update ball position
         measures.angularAcceleration = e.data.angularAcceleration
         measures.angularVelocity = e.data.angularVelocity
-       console.log("s") 
         //update already dropped balls positions
         for(let i = 0; i < balls.length-1; i++) {   
             if(!balls[i].falling) {
