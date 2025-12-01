@@ -2,7 +2,7 @@ import { measures, balls, fallThreads, rotationThread, setRotationThread } from 
 import { updateNetTorque } from '../physics.js';
 
 import { htmlUpdateLeftWeight, htmlUpdateRightWeight, htmlUpdateLeftPotentialTorque, htmlUpdateRightPotentialTorque, htmlUpdateRotationParameters, htmlUpdateRotationIndicator } from '../ui_updates.js';
-import { draw } from '../drawing.js';
+import { draw, percentage_to_px } from '../drawing.js';
 import { playImpactSound, addLog } from '../actions.js';
 import { calculateD, updateDroppedBallPosition, calculateBalltargetY, xValueLimit } from '../physics.js';
  
@@ -38,7 +38,6 @@ export function startFalling(ball, loadedFallSpeed) {
         }
     };
 }
-
 export function updateTorque(ball, isDragging) {
 
     if(isDragging) { //if this weight was a dragged dropped weight instead of a fallen weight, decrease it's last raw torque effect from it's previous side
@@ -53,7 +52,7 @@ export function updateTorque(ball, isDragging) {
 
     //torque calculation: d * w    
     ball.d = calculateD(ball.x, ball.y, ball.r);  //d is negative if ball is on the left arm of plank
-    const potentialTorque = Math.abs(ball.d) * ball.weight;   //in case angle is 0, this is the maximu torque this specific weight can apply
+    const potentialTorque = percentage_to_px(Math.abs(ball.d)) * ball.weight;   //in case angle is 0, this is the maximu torque this specific weight can apply
     ball.potentialTorque = potentialTorque;
 
     //update measures object
@@ -121,14 +120,14 @@ export function startRotation(loadedAngularVelocity) {
         
         if(e.data.finished) {
             terminateRotationThread();
-  
+            
             htmlUpdateRotationIndicator()
             //angular velocity and acceleration becomes 0
             measures.angularVelocity = 0;
             measures.angularAcceleration = 0;
         }
+        updateNetTorque(balls);  // update net tork values of right and left sde when angle is updated
 
-        updateNetTorque();  // update net tork values of right and left sde when angle is updated
         htmlUpdateRotationParameters();
 
         htmlUpdateRotationIndicator()

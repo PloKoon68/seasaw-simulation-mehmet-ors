@@ -33,9 +33,9 @@ export let measures = {
     right_side: {weight: 0, potentialTorque: 0, netTorque: 0},
     angle: 0,
     angularAcceleration: 0,
-    angularVelocity: 0
+    angularVelocity: 0,
+    systemNetTorque: 0
 }
-
 export let isPaused;
 
 //generate seperate thread for each falling ball
@@ -162,13 +162,14 @@ canvas.addEventListener('mousemove', (event) => {
 
 canvas.addEventListener('mouseup', (event) => {
     // Eğer bir sürükleme işlemi aktifse...
-    if (isDragging) {
-
+    if (isDragging) {  //meaning dragging of a ball finished
         updateTorque(draggingBall, isDragging);
+
         isDragging = false;  // Sürükleme bitti!
         draggingBall.isBeingDragged = false;
         draggingBall = null; // Sürüklenen topu serbest bırak
-    } else {
+    } 
+    else { //meaning new weight has fallen
         if(!isPaused) {
             let lastBallIndex = balls.length-1
             balls[lastBallIndex].falling = true;

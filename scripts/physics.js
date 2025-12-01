@@ -26,10 +26,23 @@ export function calculateDPointInPixels(ball) {
 }
 
 export function updateNetTorque(balls) {
+    /*
     const radian = measures.angle * Math.PI / 180;
     
     measures.right_side.netTorque = measures.right_side.potentialTorque * Math.cos(radian)
     measures.left_side.netTorque = measures.left_side.potentialTorque * Math.cos(radian)
+    */
+    let rightNetTorque = 0;
+    let leftNetTorque = 0;
+    for(let i = 0; i < balls.length-1; i++) {
+        if(balls[i].d > 0) rightNetTorque += percentage_to_px(balls[i].x - 50) * balls[i].weight //positive d meaning ball is on right side
+        else leftNetTorque +=  percentage_to_px(50 - balls[i].x) * balls[i].weight
+    }
+    let netTorque = rightNetTorque - leftNetTorque;
+    console.log("right: ", rightNetTorque)
+    measures.right_side.netTorque = rightNetTorque;
+    measures.left_side.netTorque = leftNetTorque;
+    measures.systemNetTorque = netTorque;
 }
 
 
