@@ -1,5 +1,5 @@
 import { percentage_to_px } from './drawing.js';
-import { PLANK_WIDTH, PLANK_LENGTH, LENGTH, rect, measures } from './main.js';
+import { PLANK_WIDTH, PLANK_LENGTH, measures } from './main.js';
 
 
 export let track = null
@@ -10,25 +10,22 @@ export function calculateBalltargetY(ball, angle) {    // called for each ball w
     ball.targetY = newTargetY
 }
 
-
 export function updateDroppedBallPosition(ball, angle) {    // called for each ball when the rotation thread updates the angle
     const radian = angle * Math.PI / 180;
 
     const newY = ball.d * Math.sin(radian) - (ball.r + PLANK_WIDTH/2) * Math.cos(radian) + 50;
     const newX = ball.d * Math.cos(radian) + (ball.r + PLANK_WIDTH/2) * Math.sin(radian) + 50;
-
     ball.y = newY
     ball.x = newX
 }
 
-export function horizontalDistanceToPivot(ball) {
+export function calculateDPointInPixels(ball) {
     const radian = measures.angle * Math.PI / 180;
-    const dInPixel = percentage_to_px(ball.d)  //convert to pixel
 
-    return dInPixel * Math.cos(radian) + Math.sin(radian) * (PLANK_WIDTH/2 + ball.r)
+    return percentage_to_px(ball.d * Math.cos(radian) + Math.sin(radian) * (PLANK_WIDTH/2 + ball.r))
 }
 
-export function updateNetTorque() {
+export function updateNetTorque(balls) {
     const radian = measures.angle * Math.PI / 180;
     
     measures.right_side.netTorque = measures.right_side.potentialTorque * Math.cos(radian)
@@ -36,7 +33,7 @@ export function updateNetTorque() {
 }
 
 
-export function distanceToCenterFromBallTouchPoint(bx, by, r) {
+export function calculateD(bx, by, r) {  //ball.d value which is the perpendicular distance of ball touch point to the center of seasaw
     const radian = measures.angle * Math.PI / 180   // get the current angle
 
     const dPerpendicularToPlankFromCenter = r + PLANK_WIDTH/2
@@ -47,6 +44,13 @@ export function distanceToCenterFromBallTouchPoint(bx, by, r) {
     return dx < 50? -d: d;   //if on the left side of the plank, return negative d
 }
 
+export function isBallOnRightSide(ball) { //true if ball on right side, false if on left side
+    const radian = measures.angle * Math.PI / 180;
+
+    const ballTouchPointX = ball.x - (ball.r * Math.sin(radian))  //the x point where the weight touches on plank
+    const upperSideCenterOfPlank = 50 + ((PLANK_WIDTH/2) * Math.sin(radian));   //center of the upper side of the seesaw
+    return ballTouchPointX > upperSideCenterOfPlank;
+}
 
 export function xValueLimit(x, r) {
     const radian = measures.angle * Math.PI / 180

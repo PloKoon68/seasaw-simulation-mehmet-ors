@@ -163,18 +163,8 @@ canvas.addEventListener('mousemove', (event) => {
 canvas.addEventListener('mouseup', (event) => {
     // Eğer bir sürükleme işlemi aktifse...
     if (isDragging) {
-        if(draggingBall.oldX <= 50) {
-            measures.left_side.weight -= draggingBall.weight;
-            measures.left_side.rawTorque -= draggingBall.rawTorque;
-        }
-        else {
-            measures.right_side.weight -= draggingBall.weight;
-            measures.right_side.rawTorque -= draggingBall.rawTorque;
-        }
 
-//        draggingBall.d = distanceToCenterFromBallTouchPoint(draggingBall.x, draggingBall.y, draggingBall.r);  //d is negative if ball is on the left arm of plank
-    
-        updateTorque(draggingBall);
+        updateTorque(draggingBall, isDragging);
         isDragging = false;  // Sürükleme bitti!
         draggingBall.isBeingDragged = false;
         draggingBall = null; // Sürüklenen topu serbest bırak
@@ -208,9 +198,7 @@ window.addEventListener("load", loadStateFromLocalStorage);
  
 export function updateDroppedBallPositionY(ball, angleDegrees) {
     // Topun 'd' adresi henüz hesaplanmadıysa hiçbir şey yapma.
-    if (!ball.d) {
-        return;
-    }
+    if (!ball.d) return;
 
     const rad = angleDegrees * Math.PI / 180;
 

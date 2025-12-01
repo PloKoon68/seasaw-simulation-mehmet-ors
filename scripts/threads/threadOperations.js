@@ -4,9 +4,8 @@ import { updateNetTorque } from '../physics.js';
 import { htmlUpdateLeftWeight, htmlUpdateRightWeight, htmlUpdateLeftPotentialTorque, htmlUpdateRightPotentialTorque, htmlUpdateRotationParameters, htmlUpdateRotationIndicator } from '../ui_updates.js';
 import { draw } from '../drawing.js';
 import { playImpactSound, addLog } from '../actions.js';
-import { distanceToCenterFromBallTouchPoint, horizontalDistanceToPivot, updateDroppedBallPosition, calculateBalltargetY, xValueLimit } from '../physics.js';
+import { calculateD, updateDroppedBallPosition, calculateBalltargetY, xValueLimit } from '../physics.js';
  
-
 
 export function startFalling(ball, loadedFallSpeed) {
     const fallThread = new Worker('scripts/threads/fallThread.js');
@@ -30,10 +29,6 @@ export function startFalling(ball, loadedFallSpeed) {
         if (e.data.done) {   // the moment ball has fallen and touches the plank
             playImpactSound(ball.weight);
 
-
-            ball.d = distanceToCenterFromBallTouchPoint(ball.x, ball.y, ball.r);  //d is negative if ball is on the left arm of plank
-            addLog(ball.weight, ball.x > 50? "right": "left", ball.d) //update in html
-
             ball.falling = false;   //ball falled
            
             fallThread.terminate(); // close the thread
@@ -44,27 +39,40 @@ export function startFalling(ball, loadedFallSpeed) {
     };
 }
 
-export function updateTorque(ball) {
+export function updateTorque(ball, isDragging) {
+
+    if(isDragging) { //if this weight was a dragged dropped weight instead of a fallen weight, decrease it's last raw torque effect from it's previous side
+        if(ball.d > 0) {  //if ball was previously on right side
+            measures.right_side.weight -= ball.weight;
+            measures.right_side.potentialTorque -= ball.potentialTorque; 
+        } else {
+            measures.left_side.weight -= ball.weight;
+            measures.left_side.potentialTorque -= ball.potentialTorque;
+        }
+    }
+
     //torque calculation: d * w    
-    const potentialTorque = Math.abs(horizontalDistanceToPivot(ball) * ball.weight);
+    ball.d = calculateD(ball.x, ball.y, ball.r);  //d is negative if ball is on the left arm of plank
+    const potentialTorque = Math.abs(ball.d) * ball.weight;   //in case angle is 0, this is the maximu torque this specific weight can apply
     ball.potentialTorque = potentialTorque;
 
-    //update measures object and html indicators
-    if(ball.x >= 50) {
+    //update measures object
+    if(ball.d > 0) {  //if ball is on right side
         measures.right_side.weight += ball.weight;
         measures.right_side.potentialTorque += potentialTorque; 
     } else {
         measures.left_side.weight += ball.weight;
-        measures.left_side.potentialTorque += Math.abs(potentialTorque);
+        measures.left_side.potentialTorque += potentialTorque;
     }
 
+    if(!isDragging) addLog(ball.weight, ball.d > 0? "right": "left", ball.d) //update in html
     htmlUpdateRightWeight();
     htmlUpdateRightPotentialTorque();
     htmlUpdateLeftWeight();
     htmlUpdateLeftPotentialTorque();
 
 
-    if(rotationThread) {  //if the plank was on rotation during the ball touced the plank, update rotation parameters
+    if(rotationThread) {  //if the plank was on rotation during the ball touced the plank, update rotation parameters (measuers and balls)
         rotationThread.postMessage({
             type: 'update',
             measures: measures,
