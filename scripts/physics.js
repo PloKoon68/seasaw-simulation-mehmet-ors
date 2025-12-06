@@ -10,8 +10,8 @@ export function calculateBalltargetY(ball, angle) {    // called for each ball w
     ball.targetY = newTargetY
 }
 
-export function updateDroppedBallPosition(ball, angle) {    // called for each ball when the rotation thread updates the angle
-    const radian = angle * Math.PI / 180;
+export function updateDroppedBallPosition(ball) {    // called for each ball when the rotation thread updates the angle
+    const radian = measures.angle * Math.PI / 180;
 
     const newY = ball.d * Math.sin(radian) - (ball.r + PLANK_WIDTH/2) * Math.cos(radian) + 50;
     const newX = ball.d * Math.cos(radian) + (ball.r + PLANK_WIDTH/2) * Math.sin(radian) + 50;
@@ -39,7 +39,6 @@ export function updateNetTorque(balls) {
         else leftNetTorque +=  percentage_to_px(50 - balls[i].x) * balls[i].weight
     }
     let netTorque = rightNetTorque - leftNetTorque;
-    console.log("right: ", rightNetTorque)
     measures.right_side.netTorque = rightNetTorque;
     measures.left_side.netTorque = leftNetTorque;
     measures.systemNetTorque = netTorque;

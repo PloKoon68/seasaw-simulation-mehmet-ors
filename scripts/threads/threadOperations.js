@@ -41,10 +41,13 @@ export function startFalling(ball, loadedFallSpeed) {
 export function updateTorque(ball, isDragging) {
 
     if(isDragging) { //if this weight was a dragged dropped weight instead of a fallen weight, decrease it's last raw torque effect from it's previous side
-        if(ball.d > 0) {  //if ball was previously on right side
+        console.log("drag drop")
+        if(ball.oldD > 0) {  //if ball was previously on right side
+            console.log("sağddsaan çık")
             measures.right_side.weight -= ball.weight;
             measures.right_side.potentialTorque -= ball.potentialTorque; 
         } else {
+            console.log("soldan çık")
             measures.left_side.weight -= ball.weight;
             measures.left_side.potentialTorque -= ball.potentialTorque;
         }

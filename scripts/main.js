@@ -1,6 +1,6 @@
 
 import { draw, percentage_to_px } from './drawing.js';
-import { calculateBalltargetY, xValueLimit } from './physics.js';
+import { calculateBalltargetY, xValueLimit, updateDroppedBallPosition } from './physics.js';
 import { htmlUpdateNextWeight } from './ui_updates.js';
 import { saveStateToLocalStorage, loadStateFromLocalStorage, resetSeesaw, randomDarkColor } from './state.js';
 import { startFalling, updateTorque } from './threads/threadOperations.js';
@@ -145,7 +145,8 @@ canvas.addEventListener('mousemove', (event) => {
         const maxD = PLANK_LENGTH / 2;
         newD = Math.max(-maxD, Math.min(maxD, newD));
         draggingBall.d = newD; 
-        updateDroppedBallPositionY(draggingBall, measures.angle);
+        updateDroppedBallPosition(draggingBall)
+//        updateDroppedBallPositionY(draggingBall, measures.angle);
 
         draw();
     }
@@ -163,7 +164,12 @@ canvas.addEventListener('mousemove', (event) => {
 canvas.addEventListener('mouseup', (event) => {
     // Eğer bir sürükleme işlemi aktifse...
     if (isDragging) {  //meaning dragging of a ball finished
-        updateTorque(draggingBall, isDragging);
+        
+        console.log("olds: ", draggingBall.oldD)
+        console.log("news: ", draggingBall.d)
+        
+        if(draggingBall.oldD !== draggingBall.d) //if the ball was actually dragged to a different distance
+            updateTorque(draggingBall, isDragging);
 
         isDragging = false;  // Sürükleme bitti!
         draggingBall.isBeingDragged = false;

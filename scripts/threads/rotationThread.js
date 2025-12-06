@@ -106,23 +106,3 @@ async function loop() {
 
 }
 
-
-
-
-/*
-pseudo code:
-
-if (ağırlıklar değişti)   //
-    coefficient = calculateConstantCoefficien(leftWeight, rightWeight)
-    targetAngle = updateTargetAngle(leftWeight, rightWeight);
-
-
-while(alpha != targetAngle) {   //until reaching target angle (in our case 30 or -30)
-    //update angular acceleration in every step (since angle changes every time)
-    angularAcceleration = coefficient * Math.cos(angle);
-    angularVelocity += angularAcceleration;
-    angle += angularVelocity;
-    sendNewAngle //send  to main.js it will update (rotate)
-}
-
-*/
