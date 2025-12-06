@@ -50,8 +50,15 @@ export function pdrawBall(ball) {
     ctx.beginPath();           
 
     ctx.arc(percentage_to_px(ball.x), percentage_to_px(ball.y), percentage_to_px(ball.r), 0, Math.PI * 2); // 2pi for full circle
-    ctx.globalAlpha = ball.isBeingDragged ? 0.7: 1;
     
+    ctx.globalAlpha = ball.isBeingDragged ? 0.7: 1;
+
+    if (ball.isHovered) {
+        ctx.lineWidth = 3; // Çerçevenin kalınlığı
+        ctx.strokeStyle = 'rgba(229, 55, 55, 0.8)'; // Hafif saydam beyaz
+        ctx.stroke(); //draw peripheral line
+    }
+
     ctx.fillStyle = ball.color;
     ctx.fill();
 

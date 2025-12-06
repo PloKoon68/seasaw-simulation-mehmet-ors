@@ -27,6 +27,8 @@ export let ballCount = 0;
 
 let isDragging = false;
 let draggingBall = null
+let hoveredBall = null;
+
 
 export let measures = {
     left_side: {weight: 0, potentialTorque: 0, netTorque: 0},
@@ -68,7 +70,6 @@ export function setBallCount(newBallCount) {
 function createNewBall(event) {
     const weight = Math.floor(Math.random() * 10) + 1;
     const r = 4 + weight/3;
-
     const percentageX = ((event.clientX - rect.left) / LENGTH) * 100   //percentage location x of point client clicked
 
     balls.push({ 
@@ -105,35 +106,26 @@ canvas.addEventListener('mousedown', (event) => {
     // Canvas üzerindeki tıklama koordinatlarını al (piksel cinsinden)
     const clickX = event.clientX;
     const clickY = event.clientY;
-    // Yakalanacak bir top aramak için düşmüş toplar arasında gezin
-    for (let i = balls.length - 1; i >= 0; i--) {
-        const ball = balls[i];
-        // Sadece düşmüş ve tahterevalli üzerindeki topları kontrol et
-        if (!ball.falling) {
-            // ADIM 3: Tıklama noktası ile topun merkezi arasındaki mesafeyi hesapla (Pisagor Teoremi)
-            const distanceX = (clickX - rect.left) - percentage_to_px(ball.x);
-            const distanceY = (clickY - rect.top) - percentage_to_px(ball.y);
-            const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
-            const pxRadius = percentage_to_px(ball.r)
+    
+    // check if there was a fallen ball hovered. If so, start it's dragging process, instead of dropping new ball
+    if(hoveredBall) {
+        isDragging = true;  // Sürükleme başladı!
+        draggingBall = hoveredBall;    
 
-            if (distance <= pxRadius) {
-                isDragging = true;  // Sürükleme başladı!
-                draggingBall = ball;    
-
-                ball.oldX = ball.x;
-                ball.oldD = ball.d;
-                ball.isBeingDragged = true;
-                break; // Döngüyü sonlandır, çünkü bir top bulduk.
-            }
-        }
+        draggingBall.oldD = draggingBall.d;
+        draggingBall.isBeingDragged = true;
     }
 });
 
+console.log("change successfull")
 // ball on mouse cursor
 canvas.addEventListener('mousemove', (event) => {
+    const clickX = event.clientX;
+    const clickY = event.clientY;
+
     if (isDragging && draggingBall) {
         // Mouse'un X pozisyonunu % olarak al
-        const mouseX_pct = ((event.clientX - rect.left) / LENGTH) * 100;
+        const mouseX_pct = ((clickX - rect.left) / LENGTH) * 100;
         const radian = measures.angle * Math.PI / 180;
         const cosAngle = Math.cos(radian);
 
@@ -146,17 +138,43 @@ canvas.addEventListener('mousemove', (event) => {
         newD = Math.max(-maxD, Math.min(maxD, newD));
         draggingBall.d = newD; 
         updateDroppedBallPosition(draggingBall)
-//        updateDroppedBallPositionY(draggingBall, measures.angle);
 
         draw();
     }
     else {
+        //this part updates the last balls (candidate) postion at the top before dropped
         let lastBallIndex = balls.length-1
         const percentageX = ((event.clientX - rect.left) / LENGTH) * 100   //percentage location x of point client clicked
-
         balls[lastBallIndex].x = xValueLimit(percentageX,  balls[lastBallIndex].r);
         balls[lastBallIndex].y = 10;
         balls[lastBallIndex].visible = true;
+
+        //this part updates a fallen ball's display if mouse hover's on it, before clicking
+        
+        //reset hovered ball
+        if(hoveredBall) {
+            hoveredBall.isHovered = false;
+            hoveredBall = null;
+        }
+        
+        for (let i = balls.length - 2; i >= 0; i--) {
+            const ball = balls[i];
+            // Sadece düşmüş ve tahterevalli üzerindeki topları kontrol et
+            if (!ball.falling) {
+                // ADIM 3: Tıklama noktası ile topun merkezi arasındaki mesafeyi hesapla (Pisagor Teoremi)
+                const distanceX = (clickX - rect.left) - percentage_to_px(ball.x);
+                const distanceY = (clickY - rect.top) - percentage_to_px(ball.y);
+                const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+                const pxRadius = percentage_to_px(ball.r)
+
+                if (distance <= pxRadius) {  // mouse on te ball
+                    hoveredBall = ball;    
+                    ball.isHovered = true;
+                    break; // hovered ball found, end the loop
+                }
+            }
+        }
+
         draw();
     }
 });
@@ -164,7 +182,6 @@ canvas.addEventListener('mousemove', (event) => {
 canvas.addEventListener('mouseup', (event) => {
     // Eğer bir sürükleme işlemi aktifse...
     if (isDragging) {  //meaning dragging of a ball finished
-        
         
         if(draggingBall.oldD !== draggingBall.d) //if the ball was actually dragged to a different distance
             updateTorque(draggingBall, isDragging);
