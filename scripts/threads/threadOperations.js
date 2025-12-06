@@ -43,18 +43,23 @@ export function updateTorque(ball, isDragging) {
     if(isDragging) { //if this weight was a dragged dropped weight instead of a fallen weight, decrease it's last raw torque effect from it's previous side
         console.log("drag drop")
         if(ball.oldD > 0) {  //if ball was previously on right side
-            console.log("sağddsaan çık")
             measures.right_side.weight -= ball.weight;
             measures.right_side.potentialTorque -= ball.potentialTorque; 
+
+            console.log("sağddan çık: ", ball.weight)
+            console.log("sağ sonuç: ", measures.right_side.weight, "\n")
         } else {
-            console.log("soldan çık")
             measures.left_side.weight -= ball.weight;
             measures.left_side.potentialTorque -= ball.potentialTorque;
+        
+            console.log("soldan çık: ", ball.weight)
+            console.log("sol sonuç: ", measures.left_side.weight, "\n")
         }
+
     }
 
     //torque calculation: d * w    
-    ball.d = calculateD(ball.x, ball.y, ball.r);  //d is negative if ball is on the left arm of plank
+    if(!isDragging) ball.d = calculateD(ball.x, ball.y, ball.r);  //d is negative if ball is on the left arm of plank
     const potentialTorque = percentage_to_px(Math.abs(ball.d)) * ball.weight;   //in case angle is 0, this is the maximu torque this specific weight can apply
     ball.potentialTorque = potentialTorque;
 
@@ -62,9 +67,15 @@ export function updateTorque(ball, isDragging) {
     if(ball.d > 0) {  //if ball is on right side
         measures.right_side.weight += ball.weight;
         measures.right_side.potentialTorque += potentialTorque; 
+
+        console.log("sağ ekle: ", ball.weight)
+        console.log("sağ sonuç: ", measures.right_side.weight, "\n\n\n")    
     } else {
         measures.left_side.weight += ball.weight;
         measures.left_side.potentialTorque += potentialTorque;
+
+        console.log("sol ekle: ", ball.weight)
+        console.log("sol sonuç: ", measures.left_side.weight, "\n\n\n")
     }
 
     if(!isDragging) addLog(ball.weight, ball.d > 0? "right": "left", ball.d) //update in html

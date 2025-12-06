@@ -61,9 +61,6 @@ export function logsList() {
     return logs;
 }
 
-
-
-
 //audio actions
 
 let audioContext = null;
@@ -78,7 +75,6 @@ function getAudioContext() {
 export function playImpactSound(weight) {
     try {
         const ctx = getAudioContext();
-        
         
         const intensity = (weight**3)/10; 
 

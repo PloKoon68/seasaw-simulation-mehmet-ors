@@ -165,8 +165,6 @@ canvas.addEventListener('mouseup', (event) => {
     // Eğer bir sürükleme işlemi aktifse...
     if (isDragging) {  //meaning dragging of a ball finished
         
-        console.log("olds: ", draggingBall.oldD)
-        console.log("news: ", draggingBall.d)
         
         if(draggingBall.oldD !== draggingBall.d) //if the ball was actually dragged to a different distance
             updateTorque(draggingBall, isDragging);
