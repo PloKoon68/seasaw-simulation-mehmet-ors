@@ -8,6 +8,7 @@ const gravityAcceleration = 10; //gravity acceleration
 const loopPeriod = 20;
 
 let terminate = false
+console.log("chang")
 
 function calculateConstantCoefficient(netPotentialTorque, balls) { 
     let nominator = netPotentialTorque  //τnet​=right∑​(ri)​.(mi)​.g.cos(θ)−left∑​(ri).(​mi).​g.cos(θ)
@@ -71,18 +72,26 @@ async function loop() {
     let finished = false;
 
     while (!finished) {
-        if(Math.abs(angle) > 30) {
+     
+        if(Math.abs(angle) > 30) {  //stop current motion
             angularAcceleration = 0;
             angularVelocity = 0;
-        }
+        }   
+        
+        //limit angle's value between 30 and -30
+        if(angle > 30) angle = 30;
+        if(angle < -30) angle = -30;
+
+
+
 
         angularAcceleration = coefficient * Math.cos(angle * Math.PI / 180);
         angularVelocity += angularAcceleration * (loopPeriod/1000);
         angle += angularVelocity;
         
         //finish loop
-        if (targetAngle > 0) {
-            if(angle > targetAngle) {
+        if (targetAngle > 0) {  
+            if(angle >= targetAngle) {
                 angle = targetAngle 
                 finished = true 
             }
@@ -103,6 +112,4 @@ async function loop() {
         postMessage({ finished: finished, angle: angle, angularAcceleration: angularAcceleration, angularVelocity: angularVelocity });  //send  to main.js it will update (rotate)
         await wait(loopPeriod);
     }
-
 }
-
