@@ -16,6 +16,7 @@ This is a simulation where users can drop randomly weighted circle objects onto 
 - **Interactive Interface:** Users can drop balls with random weights (1-10 kg) anywhere on the seesaw plank.
 - **Real-time Data Indicators:** Set of indicators displaying instantaneous data such as angle, angular velocity, angular acceleration, and the total weight/torque on both left and right side of the seasaw.
 - **Logs Panel:** A log list that records the weight and position of each dropped ball.
+- **Drag & Drop Fallen Balls:** User can adjust the fallen balls position on the seasaw, shifting them rightwise or leftwise, end the system would update the torque and act accordingly.
 - **State Management:**
   - **Pause/Continue:** The ability to pause the simulation at any moment and resume it from where it left off.
   - **Reset:** A button to reset the simulation to its initial state.
@@ -70,18 +71,18 @@ I = Σ(massᵢ × distanceᵢ²).
 
 The `<canvas>` API was to ensure fluid and high-performance animations. Canvas provides great performance, especially in scenarios with hundreds of objects, and offers complete, pixel-level control over the rendering process.
 
-## ⚠️ Trade-offs and Limitations
+## Trade-offs and Limitations
 
 -   **Web Worker Architecture:** While using a separate `fallThread` for each ball and a single `rotationThread` is a robust architectural choice for showcasing skills, a simpler simulation could have managed all animations in the main thread using `requestAnimationFrame`. This design, however, guarantees that the UI remains responsive no matter how complex the simulation becomes.
 -   **Physical Realism:** The simulation successfully models fundamental rotational dynamics. More advanced physics concepts such as friction, air resistance, or inter-object collisions were considered outside the scope of this project.
--   **Mobile Responsiveness:** The project was developed primarily for desktop browsers. While `click` events function on mobile devices, the UI has not been fully optimized for smaller screens.
+-   **Mobile Responsiveness:** The project was developed primarily for desktop browsers. The css styling is made responsive, adaptive to different screen width's. While `click` events function on mobile devices, the UI has not been fully optimized for smaller screens.
 
-## 🤖 AI Usage
+## AI Usage
 
 During the development of this project, AI tools (such as ChatGPT/Gemini) were used in the following assistive roles:
 
 -   **Debugging:** Acted as a consultant for verifying complex trigonometric formulas (like the Lever Arm calculation) and identifying the root cause of `NaN` errors.
--   **Algorithm Exploration:** Used to explore different architectural approaches for designing stateful Web Workers that can be updated dynamically.
+-   **Which Tools to Use:** Used to explore which tools are used to achieve specific tasks (like Webworkers used for multi-thread like operations, working simultaneously).
 -   **Refactoring and Code Cleanup:** Provided suggestions for improving function names to be more semantic and for structuring the code into logical, modular blocks.
 -   **Styling suggestions**
 
